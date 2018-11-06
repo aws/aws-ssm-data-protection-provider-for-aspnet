@@ -15,14 +15,21 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
 {
     public class SSMXmlRepositoryTests
     {
+        private const string BasePrefix = "MockKeyHome";
+        private Mock<IAmazonSimpleSystemsManagement> _mockSSM;
+
+        public SSMXmlRepositoryTests()
+        {
+            _mockSSM = new Mock<IAmazonSimpleSystemsManagement>();
+        }
+
         [Fact]
         public void AddKey()
         {
-            var prefix = "/MockKeyHome/";
+            var prefix = "/" + BasePrefix + "/";
             var keyText = "<key id=\"foo\"></key>";
-            var mockSSM = new Mock<IAmazonSimpleSystemsManagement>();
 
-            mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
+            _mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
                 .Callback<PutParameterRequest, CancellationToken>((request, token) =>
                 {
                     Assert.NotNull(request.Name);
@@ -41,7 +48,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
                     return Task.FromResult(new PutParameterResponse());
                 });
 
-            var repository = new SSMXmlRepository(mockSSM.Object, prefix, null, null);
+            var repository = new SSMXmlRepository(_mockSSM.Object, prefix, null, null);
 
             XElement key = XElement.Parse(keyText);
             repository.StoreElement(key, "bar");
@@ -50,10 +57,9 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
         [Fact]
         public void GetKeys()
         {
-            var prefix = "/MockKeyHome/";
-            var mockSSM = new Mock<IAmazonSimpleSystemsManagement>();
+            var prefix = "/" + BasePrefix + "/";
 
-            mockSSM.Setup(client => client.GetParametersByPathAsync(It.IsAny<GetParametersByPathRequest>(), It.IsAny<CancellationToken>()))
+            _mockSSM.Setup(client => client.GetParametersByPathAsync(It.IsAny<GetParametersByPathRequest>(), It.IsAny<CancellationToken>()))
                 .Callback<GetParametersByPathRequest, CancellationToken>((request, token) =>
                 {
                     Assert.NotNull(request.Path);
@@ -80,7 +86,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
                     return Task.FromResult(response);
                 });
 
-            var repository = new SSMXmlRepository(mockSSM.Object, prefix, null, null);
+            var repository = new SSMXmlRepository(_mockSSM.Object, prefix, null, null);
 
             var elements = repository.GetAllElements();
             Assert.Equal(2, elements.Count);
@@ -93,10 +99,9 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
         [Fact]
         public void EnsureValidKeysComebackEvenWhenOneIsInvalid()
         {
-            var prefix = "/MockKeyHome/";
-            var mockSSM = new Mock<IAmazonSimpleSystemsManagement>();
+            var prefix = "/" + BasePrefix + "/";
 
-            mockSSM.Setup(client => client.GetParametersByPathAsync(It.IsAny<GetParametersByPathRequest>(), It.IsAny<CancellationToken>()))
+            _mockSSM.Setup(client => client.GetParametersByPathAsync(It.IsAny<GetParametersByPathRequest>(), It.IsAny<CancellationToken>()))
                 .Callback<GetParametersByPathRequest, CancellationToken>((request, token) =>
                 {
                     Assert.NotNull(request.Path);
@@ -123,7 +128,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
                     return Task.FromResult(response);
                 });
 
-            var repository = new SSMXmlRepository(mockSSM.Object, prefix, null, null);
+            var repository = new SSMXmlRepository(_mockSSM.Object, prefix, null, null);
 
             var elements = repository.GetAllElements();
             Assert.Equal(1, elements.Count);
@@ -133,11 +138,10 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
         [Fact]
         public void PageGetKeys()
         {
-            var prefix = "/MockKeyHome/";
-            var mockSSM = new Mock<IAmazonSimpleSystemsManagement>();
+            var prefix = "/" + BasePrefix + "/";
 
             int callCount = 0;
-            mockSSM.Setup(client => client.GetParametersByPathAsync(It.IsAny<GetParametersByPathRequest>(), It.IsAny<CancellationToken>()))
+            _mockSSM.Setup(client => client.GetParametersByPathAsync(It.IsAny<GetParametersByPathRequest>(), It.IsAny<CancellationToken>()))
                 .Callback<GetParametersByPathRequest, CancellationToken>((request, token) =>
                 {
                     Assert.NotNull(request.Path);
@@ -187,7 +191,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
                 });
 
 
-            var repository = new SSMXmlRepository(mockSSM.Object, prefix, null, null);
+            var repository = new SSMXmlRepository(_mockSSM.Object, prefix, null, null);
 
             var elements = repository.GetAllElements();
 
@@ -198,11 +202,10 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
         [Fact]
         public void ParameterPrefixMissingBeginningSlash()
         {
-            var prefix = "MockKeyHome/";
+            var prefix = BasePrefix + "/";
             var keyText = "<key id=\"foo\"></key>";
-            var mockSSM = new Mock<IAmazonSimpleSystemsManagement>();
 
-            mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
+            _mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
                 .Callback<PutParameterRequest, CancellationToken>((request, token) =>
                 {
                     Assert.NotNull(request.Name);
@@ -213,7 +216,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
                     return Task.FromResult(new PutParameterResponse());
                 });
 
-            var repository = new SSMXmlRepository(mockSSM.Object, prefix, null, null);
+            var repository = new SSMXmlRepository(_mockSSM.Object, prefix, null, null);
 
             XElement key = XElement.Parse(keyText);
             repository.StoreElement(key, "bar");
@@ -222,11 +225,10 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
         [Fact]
         public void ParameterPrefixMissingEndingSlash()
         {
-            var prefix = "/MockKeyHome";
+            var prefix = "/" + BasePrefix;
             var keyText = "<key id=\"foo\"></key>";
-            var mockSSM = new Mock<IAmazonSimpleSystemsManagement>();
 
-            mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
+            _mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
                 .Callback<PutParameterRequest, CancellationToken>((request, token) =>
                 {
                     Assert.NotNull(request.Name);
@@ -237,7 +239,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
                     return Task.FromResult(new PutParameterResponse());
                 });
 
-            var repository = new SSMXmlRepository(mockSSM.Object, prefix, null, null);
+            var repository = new SSMXmlRepository(_mockSSM.Object, prefix, null, null);
 
             XElement key = XElement.Parse(keyText);
             repository.StoreElement(key, "bar");
@@ -246,22 +248,20 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
         [Fact]
         public void ParameterPrefixNoSlashes()
         {
-            var prefix = "MockKeyHome";
             var keyText = "<key id=\"foo\"></key>";
-            var mockSSM = new Mock<IAmazonSimpleSystemsManagement>();
 
-            mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
+            _mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
                 .Callback<PutParameterRequest, CancellationToken>((request, token) =>
                 {
                     Assert.NotNull(request.Name);
-                    Assert.Equal("/" + prefix + "/bar", request.Name);
+                    Assert.Equal("/" + BasePrefix + "/bar", request.Name);
                 })
                 .Returns((PutParameterRequest r, CancellationToken token) =>
                 {
                     return Task.FromResult(new PutParameterResponse());
                 });
 
-            var repository = new SSMXmlRepository(mockSSM.Object, prefix, null, null);
+            var repository = new SSMXmlRepository(_mockSSM.Object, BasePrefix, null, null);
 
             XElement key = XElement.Parse(keyText);
             repository.StoreElement(key, "bar");
@@ -270,22 +270,20 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
         [Fact]
         public void ParameterUsesKeyId()
         {
-            var prefix = "MockKeyHome";
             var keyText = "<key id=\"foo\"></key>";
-            var mockSSM = new Mock<IAmazonSimpleSystemsManagement>();
 
-            mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
+            _mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
                 .Callback<PutParameterRequest, CancellationToken>((request, token) =>
                 {
                     Assert.NotNull(request.Name);
-                    Assert.Equal("/" + prefix + "/foo", request.Name);
+                    Assert.Equal("/" + BasePrefix + "/foo", request.Name);
                 })
                 .Returns((PutParameterRequest r, CancellationToken token) =>
                 {
                     return Task.FromResult(new PutParameterResponse());
                 });
 
-            var repository = new SSMXmlRepository(mockSSM.Object, prefix, null, null);
+            var repository = new SSMXmlRepository(_mockSSM.Object, BasePrefix, null, null);
 
             XElement key = XElement.Parse(keyText);
             repository.StoreElement(key, null);
@@ -296,9 +294,8 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
         {
             var prefix = "MockKeyHome";
             var keyText = "<key></key>";
-            var mockSSM = new Mock<IAmazonSimpleSystemsManagement>();
 
-            mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
+            _mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
                 .Callback<PutParameterRequest, CancellationToken>((request, token) =>
                 {
                     Assert.NotNull(request.Name);
@@ -311,7 +308,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
                     return Task.FromResult(new PutParameterResponse());
                 });
 
-            var repository = new SSMXmlRepository(mockSSM.Object, prefix, null, null);
+            var repository = new SSMXmlRepository(_mockSSM.Object, prefix, null, null);
 
             XElement key = XElement.Parse(keyText);
             repository.StoreElement(key, null);
@@ -320,12 +317,11 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
         [Fact]
         public void UseKMSKey()
         {
-            var prefix = "/MockKeyHome/";
+            var prefix = "/" + BasePrefix + "/";
             var keyText = "<key id=\"foo\"></key>";
             var kmsKeyId = "customer-provided-kms-key-id";
-            var mockSSM = new Mock<IAmazonSimpleSystemsManagement>();
 
-            mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
+            _mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
                 .Callback<PutParameterRequest, CancellationToken>((request, token) =>
                 {
                     Assert.NotNull(request.Name);
@@ -349,11 +345,10 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
             {
                 KMSKeyId = kmsKeyId
             };
-            var repository = new SSMXmlRepository(mockSSM.Object, prefix, options, null);
+            var repository = new SSMXmlRepository(_mockSSM.Object, prefix, options, null);
 
             XElement key = XElement.Parse(keyText);
             repository.StoreElement(key, "bar");
-
         }
     }
 }

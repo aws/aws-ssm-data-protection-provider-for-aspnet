@@ -6,7 +6,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM
 {
     /// <summary>
     /// Exception thrown when the service client for AWS Systems Manager, implementation of the interface IAmazonSimpleSystemsManagement,
-    /// can not be found when constructing the DataProtection SSM repository. 
+    /// cannot be found when constructing the DataProtection SSM repository. 
     /// </summary>
     public class SSMNotConfiguredException : Exception
     {

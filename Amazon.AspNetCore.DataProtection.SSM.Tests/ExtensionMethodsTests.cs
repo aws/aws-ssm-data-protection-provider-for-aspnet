@@ -29,14 +29,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
             serviceContainer.AddDataProtection()
                 .PersistKeysToAWSSystemsManager("/RegisterTest");
 
-            var services = serviceContainer.BuildServiceProvider();
-
-            var dataProtector = services.GetDataProtector("test-purpose");
-            var testData = Guid.NewGuid().ToString();
-            var encData = dataProtector.Protect(testData);
-            var decData = dataProtector.Unprotect(encData);
-
-            Assert.Equal(testData, decData);
+            AssertDataProtectUnprotect(serviceContainer.BuildServiceProvider());
         }
 
         [Fact]
@@ -54,14 +47,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
                     options.KMSKeyId = kmsKeyId;
                 });
 
-            var services = serviceContainer.BuildServiceProvider();
-
-            var dataProtector = services.GetDataProtector("test-purpose");
-            var testData = Guid.NewGuid().ToString();
-            var encData = dataProtector.Protect(testData);
-            var decData = dataProtector.Unprotect(encData);
-
-            Assert.Equal(testData, decData);
+            AssertDataProtectUnprotect(serviceContainer.BuildServiceProvider());
         }
 
         [Fact]
@@ -72,13 +58,9 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
             serviceContainer.AddDataProtection()
                 .PersistKeysToAWSSystemsManager("/RegisterTest");
 
-            var services = serviceContainer.BuildServiceProvider();
-
             Assert.Throws<SSMNotConfiguredException>(() =>
             {
-                var dataProtector = services.GetDataProtector("test-purpose");
-                var testData = Guid.NewGuid().ToString();
-                var encData = dataProtector.Protect(testData);
+                AssertDataProtectUnprotect(serviceContainer.BuildServiceProvider());
             });
         }
 
@@ -87,7 +69,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
         {
             var mockSSM = new Mock<IAmazonSimpleSystemsManagement>();
 
-            List<Parameter> parameters = new List<Parameter>();
+            var parameters = new List<Parameter>();
 
             mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
                 .Callback<PutParameterRequest, CancellationToken>((request, token) =>
@@ -120,6 +102,16 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
                 });
 
             return mockSSM.Object;
+        }
+
+        private static void AssertDataProtectUnprotect(ServiceProvider services)
+        {
+            var dataProtector = services.GetDataProtector("test-purpose");
+            var testData = Guid.NewGuid().ToString();
+            var encData = dataProtector.Protect(testData);
+            var decData = dataProtector.Unprotect(encData);
+
+            Assert.Equal(testData, decData);
         }
     }
 }

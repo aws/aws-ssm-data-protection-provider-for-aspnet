@@ -15,23 +15,24 @@ namespace Amazon.AspNetCore.DataProtection.SSM
     /// <summary>
     /// Implementation of IXmlRepository that handles storing and retrieving DataProtection keys from the SSM Parameter Store. 
     /// </summary>
-    public class SSMXmlRepository : IXmlRepository, IDisposable
+    internal class SSMXmlRepository : IXmlRepository, IDisposable
     {
-        IAmazonSimpleSystemsManagement _ssmClient;
-        string _parameterNamePrefix;
-        private PersistOptions _options;
-        ILogger<SSMXmlRepository> _logger;
+        private readonly IAmazonSimpleSystemsManagement _ssmClient;
+        private readonly string _parameterNamePrefix;
+        private readonly PersistOptions _options;
+        private readonly ILogger<SSMXmlRepository> _logger;
 
         /// <summary>
-        /// Instantiate an instance of SSMXmlRepository. The common usage is not to use this constructor directly but use the 
-        /// extension method PersistKeysToAWSSystemsManager from the IDataProtectionBuilder. This will 
-        /// take care of creating an instance of SSMXmlRepository and registering it as the xml repository for DataProtection.
+        /// Create an SSMXmlRepository
+        /// 
+        /// This class is internal and the constructor isn't meant to be called outside this assembly.
+        /// It's used by the IDataProtectionBuilder.PersistKeysToAWSSystemsManager extension method.
         /// </summary>
         /// <param name="ssmClient"></param>
         /// <param name="parameterNamePrefix"></param>
         /// <param name="options"></param>
         /// <param name="loggerFactory"></param>
-        public SSMXmlRepository(IAmazonSimpleSystemsManagement ssmClient, string parameterNamePrefix, PersistOptions options, ILoggerFactory loggerFactory)
+        public SSMXmlRepository(IAmazonSimpleSystemsManagement ssmClient, string parameterNamePrefix, PersistOptions options = null, ILoggerFactory loggerFactory = null)
         {
             _ssmClient = ssmClient ?? throw new ArgumentNullException(nameof(ssmClient));
             _parameterNamePrefix = parameterNamePrefix ?? throw new ArgumentNullException(nameof(parameterNamePrefix));
@@ -46,17 +47,13 @@ namespace Amazon.AspNetCore.DataProtection.SSM
                 _logger = NullLoggerFactory.Instance.CreateLogger<SSMXmlRepository>();
             }
 
-            if (!this._parameterNamePrefix.StartsWith("/"))
-            {
-                this._parameterNamePrefix = "/" + this._parameterNamePrefix;
-            }
-            if (!this._parameterNamePrefix.EndsWith("/"))
-            {
-                this._parameterNamePrefix += "/";
-            }
+            // make sure _parameterNamePrefix is bookended with '/' characters
+            _parameterNamePrefix = '/' + _parameterNamePrefix.Trim('/') + '/';
 
-            this._logger.LogInformation($"Using SSM Parameter Store to persist DataProtection keys with parameter name prefix {this._parameterNamePrefix}");
+            _logger.LogInformation($"Using SSM Parameter Store to persist DataProtection keys with parameter name prefix {_parameterNamePrefix}");
         }
+
+
 
         /// <summary>
         /// Get all of the DataProtection keys from parameter store. Any parameter values that can't be parsed 
@@ -72,7 +69,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM
         {
             var request = new GetParametersByPathRequest
             {
-                Path = this._parameterNamePrefix,
+                Path = _parameterNamePrefix,
                 WithDecryption = true
             };
             GetParametersByPathResponse response = null;
@@ -87,7 +84,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM
                 }
                 catch(Exception e)
                 {
-                    this._logger.LogError($"Error calling SSM to get parameters starting with {this._parameterNamePrefix}: {e.Message}");
+                    _logger.LogError($"Error calling SSM to get parameters starting with {_parameterNamePrefix}: {e.Message}");
                     throw;
                 }
 
@@ -100,13 +97,13 @@ namespace Amazon.AspNetCore.DataProtection.SSM
                     }
                     catch(Exception e)
                     {
-                        this._logger.LogError($"Error parsing key {parameter.Name}, key will be skipped: {e.Message}");
+                        _logger.LogError($"Error parsing key {parameter.Name}, key will be skipped: {e.Message}");
                     }
                 }
 
-            }while(!string.IsNullOrEmpty(response.NextToken));
+            } while(!string.IsNullOrEmpty(response.NextToken));
 
-            this._logger.LogInformation($"Loaded {results.Count} DataProtection keys");
+            _logger.LogInformation($"Loaded {results.Count} DataProtection keys");
             return results;
         }
 
@@ -122,7 +119,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM
 
         private async Task StoreElementAsync(XElement element, string friendlyName)
         {
-            var parameterName = this._parameterNamePrefix + 
+            var parameterName = _parameterNamePrefix + 
                             (friendlyName ??
                             element.Attribute("id")?.Value ??
                             Guid.NewGuid().ToString());
@@ -137,24 +134,24 @@ namespace Amazon.AspNetCore.DataProtection.SSM
                     Description = "ASP.NET Core DataProtection Key"
                 };
 
-                if(!string.IsNullOrEmpty(this._options.KMSKeyId))
+                if(!string.IsNullOrEmpty(_options.KMSKeyId))
                 {
-                    request.KeyId = this._options.KMSKeyId;
+                    request.KeyId = _options.KMSKeyId;
                 }
 
-                await this._ssmClient.PutParameterAsync(request);
+                await _ssmClient.PutParameterAsync(request);
 
-                this._logger.LogInformation($"Saved DataProtection key to SSM Parameter Store with parameter name {parameterName}");
+                _logger.LogInformation($"Saved DataProtection key to SSM Parameter Store with parameter name {parameterName}");
             }
             catch(Exception e)
             {
-                this._logger.LogError($"Error saving DataProtection key to SSM Parameter Store with parameter name {parameterName}: {e.Message}");
+                _logger.LogError($"Error saving DataProtection key to SSM Parameter Store with parameter name {parameterName}: {e.Message}");
                 throw;
             }
         }
 
         #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
+        private bool disposedValue = false;
 
         protected virtual void Dispose(bool disposing)
         {
@@ -162,14 +159,13 @@ namespace Amazon.AspNetCore.DataProtection.SSM
             {
                 if (disposing)
                 {
-                    this._ssmClient?.Dispose();
+                    _ssmClient?.Dispose();
                 }
 
                 disposedValue = true;
             }
         }
 
-        // This code added to correctly implement the disposable pattern.
         public void Dispose()
         {
             Dispose(true);
