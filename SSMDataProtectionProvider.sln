@@ -7,6 +7,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Amazon.AspNetCore.DataProte
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Amazon.AspNetCore.DataProtection.SSM.Tests", "Amazon.AspNetCore.DataProtection.SSM.Tests\Amazon.AspNetCore.DataProtection.SSM.Tests.csproj", "{53DFBE1D-A301-4C7C-A146-DE799B8B51B5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{88A42C4A-FA8E-4F91-AA63-D1CE1DE35B3F}"
+	ProjectSection(SolutionItems) = preProject
+		CONTRIBUTING.md = CONTRIBUTING.md
+		LICENSE = LICENSE
+		NOTICE = NOTICE
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

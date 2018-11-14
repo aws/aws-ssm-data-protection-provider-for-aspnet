@@ -1,4 +1,18 @@
-﻿using Microsoft.AspNetCore.DataProtection.KeyManagement;
+﻿/*
+Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+
+  Licensed under the Apache License, Version 2.0 (the "License").
+  You may not use this file except in compliance with the License.
+  A copy of the License is located at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  or in the "license" file accompanying this file. This file is distributed
+  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+  express or implied. See the License for the specific language governing
+  permissions and limitations under the License.
+ */
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
@@ -9,9 +23,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.AspNetCore.DataProtection;
 
+using Amazon.AspNetCore.DataProtection.SSM;
 using Amazon.SimpleSystemsManagement;
 
-namespace Amazon.AspNetCore.DataProtection.SSM
+namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// Extension methods to make it easy to register SSM to persist data protection keys.
@@ -53,7 +68,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM
                 setupAction?.Invoke(ssmOptions);
 
                 var ssmClient = services.GetService<IAmazonSimpleSystemsManagement>();
-                if(ssmClient == null)
+                if (ssmClient == null)
                 {
                     throw new SSMNotConfiguredException();
                 }
@@ -67,17 +82,5 @@ namespace Amazon.AspNetCore.DataProtection.SSM
 
             return builder;
         }
-    }
-
-    /// <summary>
-    /// Optional parameters that can be specified to configure how DataProtection keys should be stored in the Parameter Store.
-    /// </summary>
-    public class PersistOptions
-    {
-        /// <summary>
-        /// The KMS Key ID that you want to use to encrypt a parameter when you choose the SecureString data type. If you 
-        /// don't specify a key ID, the system uses the default key associated with your AWS account.
-        /// </summary>
-        public string KMSKeyId { get; set; }
     }
 }

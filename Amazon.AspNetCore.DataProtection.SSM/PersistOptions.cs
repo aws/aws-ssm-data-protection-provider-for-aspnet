@@ -19,20 +19,14 @@ using System.Text;
 namespace Amazon.AspNetCore.DataProtection.SSM
 {
     /// <summary>
-    /// Exception thrown when the service client for AWS Systems Manager, implementation of the interface IAmazonSimpleSystemsManagement,
-    /// cannot be found when constructing the DataProtection SSM repository. 
+    /// Optional parameters that can be specified to configure how DataProtection keys should be stored in the Parameter Store.
     /// </summary>
-    public class SSMNotConfiguredException : Exception
+    public class PersistOptions
     {
         /// <summary>
-        /// Default Constructor
+        /// The KMS Key ID that you want to use to encrypt a parameter when you choose the SecureString data type. If you 
+        /// don't specify a key ID, the system uses the default key associated with your AWS account.
         /// </summary>
-        public SSMNotConfiguredException()
-            :base("The AWS Systems Manager service client is not configured with the service provider. " +
-                  "Add the AWSSDK.Extensions.NETCore.Setup package and then call \"services.AddAWSService<Amazon.SimpleSystemsManagement.IAmazonSimpleSystemsManagement>();\" " +
-                  "when adding services to the IServiceCollection.")
-        {
-
-        }
+        public string KMSKeyId { get; set; }
     }
 }
