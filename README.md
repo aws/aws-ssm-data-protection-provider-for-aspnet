@@ -19,13 +19,11 @@ Follow the examples below to see how the library can be integrated into your app
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddAWSService<Amazon.SimpleSystemsManagement.IAmazonSimpleSystemsManagement>();
-
     services.AddDataProtection()
         .PersistKeysToAWSSystemsManager("/MyApplication/DataProtection");
 
     services.AddMvc()
-            .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+        .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 }
 ```
 ## Getting Help

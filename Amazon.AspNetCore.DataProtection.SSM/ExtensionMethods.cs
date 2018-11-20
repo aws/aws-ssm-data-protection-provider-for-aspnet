@@ -55,12 +55,14 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="parameterNamePrefix">The prefix applied to the DataProtection key names.</param>
         /// <param name="setupAction">Delegate to specify options for persistence. For example setting a KMS Key ID.</param>
         /// <returns></returns>
-        public static IDataProtectionBuilder PersistKeysToAWSSystemsManager(this IDataProtectionBuilder builder, string parameterNamePrefix, Action<PersistOptions> setupAction)
+        public static IDataProtectionBuilder PersistKeysToAWSSystemsManager(this IDataProtectionBuilder builder, string parameterNamePrefix, Action<PersistOptions> setupAction = null)
         {
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
+
+            builder.Services.TryAddAWSService<IAmazonSimpleSystemsManagement>();
 
             builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
             {
@@ -68,10 +70,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 setupAction?.Invoke(ssmOptions);
 
                 var ssmClient = services.GetService<IAmazonSimpleSystemsManagement>();
-                if (ssmClient == null)
-                {
-                    throw new SSMNotConfiguredException();
-                }
 
                 var loggerFactory = services.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
                 return new ConfigureOptions<KeyManagementOptions>(options =>

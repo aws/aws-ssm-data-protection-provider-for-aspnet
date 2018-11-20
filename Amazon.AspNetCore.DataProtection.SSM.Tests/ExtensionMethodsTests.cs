@@ -64,21 +64,6 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
             AssertDataProtectUnprotect(serviceContainer.BuildServiceProvider());
         }
 
-        [Fact]
-        public void ThrowErrorWhenSSMNotConfigured()
-        {
-            var serviceContainer = new ServiceCollection();
-
-            serviceContainer.AddDataProtection()
-                .PersistKeysToAWSSystemsManager("/RegisterTest");
-
-            Assert.Throws<SSMNotConfiguredException>(() =>
-            {
-                AssertDataProtectUnprotect(serviceContainer.BuildServiceProvider());
-            });
-        }
-
-
         private IAmazonSimpleSystemsManagement CreateMockSSMClient(string kmsKeyId)
         {
             var mockSSM = new Mock<IAmazonSimpleSystemsManagement>();

@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.3.6" />
     <PackageReference Include="AWSSDK.SimpleSystemsManagement" Version="3.3.35.4" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.Extensions" Version="2.0.3" />
   </ItemGroup>
