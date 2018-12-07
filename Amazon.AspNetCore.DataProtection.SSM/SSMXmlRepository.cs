@@ -24,6 +24,8 @@ using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
+using Amazon.Runtime;
+using System.Reflection;
 
 namespace Amazon.AspNetCore.DataProtection.SSM
 {
@@ -32,6 +34,9 @@ namespace Amazon.AspNetCore.DataProtection.SSM
     /// </summary>
     internal class SSMXmlRepository : IXmlRepository, IDisposable
     {
+        const string UserAgentHeader = "User-Agent";
+        static readonly string _assemblyVersion = typeof(SSMXmlRepository).GetTypeInfo().Assembly.GetName().Version.ToString();
+
         private readonly IAmazonSimpleSystemsManagement _ssmClient;
         private readonly string _parameterNamePrefix;
         private readonly PersistOptions _options;
@@ -52,6 +57,8 @@ namespace Amazon.AspNetCore.DataProtection.SSM
             _ssmClient = ssmClient ?? throw new ArgumentNullException(nameof(ssmClient));
             _parameterNamePrefix = parameterNamePrefix ?? throw new ArgumentNullException(nameof(parameterNamePrefix));
             _options = options ?? new PersistOptions();
+
+            AddUserAgentHandlerToClient(_ssmClient);
 
             if(loggerFactory != null)
             {
@@ -186,5 +193,20 @@ namespace Amazon.AspNetCore.DataProtection.SSM
             Dispose(true);
         }
         #endregion
+
+        private static void AddUserAgentHandlerToClient(IAmazonSimpleSystemsManagement iamazonSimpleSystemsManagement)
+        {
+            if (iamazonSimpleSystemsManagement is AmazonSimpleSystemsManagementClient amazonSimpleSystemsManagementClient)
+            {
+                amazonSimpleSystemsManagementClient.BeforeRequestEvent += (object sender, RequestEventArgs e) =>
+                {
+                    var args = e as Amazon.Runtime.WebServiceRequestEventArgs;
+                    if (args == null || !args.Headers.ContainsKey(UserAgentHeader))
+                        return;
+
+                    args.Headers[UserAgentHeader] = args.Headers[UserAgentHeader] + " SSMDataProtectionProvider/" + _assemblyVersion;
+                };
+            }
+        }
     }
 }
