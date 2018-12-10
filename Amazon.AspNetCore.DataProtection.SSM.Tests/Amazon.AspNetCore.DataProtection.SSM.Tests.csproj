@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
@@ -7,14 +7,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Amazon.AspNetCore.DataProtection.SSM\ExtensionMethods.cs" Link="ExtensionMethods.cs" />
+    <Compile Include="..\Amazon.AspNetCore.DataProtection.SSM\PersistOptions.cs" Link="PersistOptions.cs" />
+    <Compile Include="..\Amazon.AspNetCore.DataProtection.SSM\SSMXmlRepository.cs" Link="SSMXmlRepository.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.3.6" />
+    <PackageReference Include="AWSSDK.SimpleSystemsManagement" Version="3.3.35.4" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.Extensions" Version="2.0.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
     <PackageReference Include="Moq" Version="4.8.2" />
     <PackageReference Include="xunit" Version="2.3.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Amazon.AspNetCore.DataProtection.SSM\Amazon.AspNetCore.DataProtection.SSM.csproj" />
   </ItemGroup>
 
 </Project>
