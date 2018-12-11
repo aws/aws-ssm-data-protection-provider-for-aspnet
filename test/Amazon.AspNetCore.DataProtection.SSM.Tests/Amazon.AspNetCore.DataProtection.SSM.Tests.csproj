@@ -7,9 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Amazon.AspNetCore.DataProtection.SSM\ExtensionMethods.cs" Link="ExtensionMethods.cs" />
-    <Compile Include="..\Amazon.AspNetCore.DataProtection.SSM\PersistOptions.cs" Link="PersistOptions.cs" />
-    <Compile Include="..\Amazon.AspNetCore.DataProtection.SSM\SSMXmlRepository.cs" Link="SSMXmlRepository.cs" />
+    <Compile Include="..\..\src\Amazon.AspNetCore.DataProtection.SSM\ExtensionMethods.cs" Link="LinkedFiles\ExtensionMethods.cs" />
+    <Compile Include="..\..\src\Amazon.AspNetCore.DataProtection.SSM\PersistOptions.cs" Link="LinkedFiles\PersistOptions.cs" />
+    <Compile Include="..\..\src\Amazon.AspNetCore.DataProtection.SSM\SSMXmlRepository.cs" Link="LinkedFiles\SSMXmlRepository.cs" />
   </ItemGroup>
 
   <ItemGroup>

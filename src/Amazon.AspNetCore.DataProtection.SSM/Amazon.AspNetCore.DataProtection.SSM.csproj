@@ -25,7 +25,7 @@
   <Choose>
     <When Condition=" '$(AWSKeyFile)' == '' ">
       <PropertyGroup>
-        <AssemblyOriginatorKeyFile>..\public.snk</AssemblyOriginatorKeyFile>
+        <AssemblyOriginatorKeyFile>..\..\public.snk</AssemblyOriginatorKeyFile>
       </PropertyGroup>
     </When>
     <Otherwise>
