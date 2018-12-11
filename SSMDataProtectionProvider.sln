@@ -3,10 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27703.2000
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Amazon.AspNetCore.DataProtection.SSM", "Amazon.AspNetCore.DataProtection.SSM\Amazon.AspNetCore.DataProtection.SSM.csproj", "{0E915D9D-AE5A-4258-968F-39B476E86D95}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Amazon.AspNetCore.DataProtection.SSM.Tests", "Amazon.AspNetCore.DataProtection.SSM.Tests\Amazon.AspNetCore.DataProtection.SSM.Tests.csproj", "{53DFBE1D-A301-4C7C-A146-DE799B8B51B5}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{88A42C4A-FA8E-4F91-AA63-D1CE1DE35B3F}"
 	ProjectSection(SolutionItems) = preProject
 		CONTRIBUTING.md = CONTRIBUTING.md
@@ -15,20 +11,24 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Amazon.AspNetCore.DataProtection.SSM", "src\Amazon.AspNetCore.DataProtection.SSM\Amazon.AspNetCore.DataProtection.SSM.csproj", "{D219BA15-FF59-414F-B3DD-F362E1081294}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Amazon.AspNetCore.DataProtection.SSM.Tests", "test\Amazon.AspNetCore.DataProtection.SSM.Tests\Amazon.AspNetCore.DataProtection.SSM.Tests.csproj", "{8EFEE5D4-BE03-439A-B55A-0562C342A2C2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0E915D9D-AE5A-4258-968F-39B476E86D95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0E915D9D-AE5A-4258-968F-39B476E86D95}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0E915D9D-AE5A-4258-968F-39B476E86D95}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0E915D9D-AE5A-4258-968F-39B476E86D95}.Release|Any CPU.Build.0 = Release|Any CPU
-		{53DFBE1D-A301-4C7C-A146-DE799B8B51B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{53DFBE1D-A301-4C7C-A146-DE799B8B51B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{53DFBE1D-A301-4C7C-A146-DE799B8B51B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{53DFBE1D-A301-4C7C-A146-DE799B8B51B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D219BA15-FF59-414F-B3DD-F362E1081294}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D219BA15-FF59-414F-B3DD-F362E1081294}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D219BA15-FF59-414F-B3DD-F362E1081294}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D219BA15-FF59-414F-B3DD-F362E1081294}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8EFEE5D4-BE03-439A-B55A-0562C342A2C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8EFEE5D4-BE03-439A-B55A-0562C342A2C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8EFEE5D4-BE03-439A-B55A-0562C342A2C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8EFEE5D4-BE03-439A-B55A-0562C342A2C2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
