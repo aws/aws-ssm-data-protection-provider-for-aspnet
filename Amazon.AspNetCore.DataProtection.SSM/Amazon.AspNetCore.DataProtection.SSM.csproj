@@ -20,9 +20,20 @@
     <Company>Amazon Web Services</Company>
     <SignAssembly>true</SignAssembly>
     <SignOnBuild>true</SignOnBuild>
-    <AssemblyOriginatorKeyFile>../public.snk</AssemblyOriginatorKeyFile>
-
   </PropertyGroup>
+
+  <Choose>
+    <When Condition=" '$(AWSKeyFile)' == '' ">
+      <PropertyGroup>
+        <AssemblyOriginatorKeyFile>..\public.snk</AssemblyOriginatorKeyFile>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <AssemblyOriginatorKeyFile>$(AWSKeyFile)</AssemblyOriginatorKeyFile>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.3.6" />
