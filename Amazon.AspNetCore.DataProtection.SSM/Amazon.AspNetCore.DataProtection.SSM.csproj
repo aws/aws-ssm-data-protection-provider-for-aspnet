@@ -19,6 +19,8 @@
     <RepositoryUrl>https://github.com/aws/aws-ssm-data-protection-provider-for-aspnet</RepositoryUrl>
     <Company>Amazon Web Services</Company>
     <SignAssembly>true</SignAssembly>
+    <SignOnBuild>true</SignOnBuild>
+    <AssemblyOriginatorKeyFile>../public.snk</AssemblyOriginatorKeyFile>
 
   </PropertyGroup>
 
