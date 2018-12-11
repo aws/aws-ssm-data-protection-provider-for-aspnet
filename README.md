@@ -1,9 +1,9 @@
 ![.NET on AWS Banner](./logo.png ".NET on AWS")
 
-# AWS Simple Systems Manager ASP.NET Core Data Protection Provider
+# AWS Systems Manager ASP.NET Core Data Protection Provider
 This software is in development and we do not recommend using this software in production environment.
 
-Simple Systems Manager ASP.NET Core Data Protection Provider library allows you to use [AWS SSM](https://aws.amazon.com/systems-manager/)'s [Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html) to store keys generted by ASP.NET's Data Protection API.
+AWS Systems Manager ASP.NET Core Data Protection Provider library allows you to use [AWS SSM](https://aws.amazon.com/systems-manager/)'s [Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html) to store keys generted by ASP.NET's Data Protection API.
 This enables you to scale by allowing multiple web servers to share the keys.
 
 The library introduces the following dependencies:

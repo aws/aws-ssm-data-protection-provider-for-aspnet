@@ -2,6 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <NetStandardImplicitPackageVersion>2.0.0</NetStandardImplicitPackageVersion>
+    <Description>AWS Systems Manager ASP.NET Core Data Protection Provider</Description>
+    <AssemblyTitle>Amazon.AspNetCore.DataProtection.SSM</AssemblyTitle>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <AssemblyName>Amazon.AspNetCore.DataProtection.SSM</AssemblyName>
+    <PackageId>Amazon.AspNetCore.DataProtection.SSM</PackageId>
+    <PackageTags>AWS;Amazon;SSM</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
