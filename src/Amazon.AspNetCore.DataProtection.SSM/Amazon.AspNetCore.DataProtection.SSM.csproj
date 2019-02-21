@@ -20,6 +20,7 @@
     <Company>Amazon Web Services</Company>
     <SignAssembly>true</SignAssembly>
     <SignOnBuild>true</SignOnBuild>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <Choose>
