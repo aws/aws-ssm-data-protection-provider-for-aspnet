@@ -28,5 +28,8 @@ namespace Amazon.AspNetCore.DataProtection.SSM
         /// don't specify a key ID, the system uses the default key associated with your AWS account.
         /// </summary>
         public string KMSKeyId { get; set; }
+
+        /// <summary>The prefix applied to the DataProtection key names.</summary>
+        public string ParameterNamePrefix { get; set; }
     }
 }

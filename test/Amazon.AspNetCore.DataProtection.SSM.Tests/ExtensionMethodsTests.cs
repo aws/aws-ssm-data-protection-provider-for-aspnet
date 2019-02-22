@@ -64,6 +64,21 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
             AssertDataProtectUnprotect(serviceContainer.BuildServiceProvider());
         }
 
+        [Fact]
+        public void RegisterSSMProviderFromOptions()
+        {
+            var ssmClient = CreateMockSSMClient(null);
+
+            var serviceContainer = new ServiceCollection()
+                    .AddSingleton<IAmazonSimpleSystemsManagement>(ssmClient)
+                    .Configure<PersistOptions>(o => o.ParameterNamePrefix = "/RegisterTest");
+
+            serviceContainer.AddDataProtection()
+                .PersistKeysToAWSSystemsManager();
+
+            AssertDataProtectUnprotect(serviceContainer.BuildServiceProvider());
+        }
+
         private IAmazonSimpleSystemsManagement CreateMockSSMClient(string kmsKeyId)
         {
             var mockSSM = new Mock<IAmazonSimpleSystemsManagement>();

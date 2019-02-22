@@ -35,6 +35,42 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         /// <summary>
         /// Register AWS Systems Manager (SSM) to persist the ASP.NET Core DataProtection framework keys. Keys will be stored in SSM's 
+        /// Parameter Store using the prefix specified by <see cref="PersistOptions.ParameterNamePrefix"/>. It is expected that only DataProtection keys will be stored
+        /// with this prefix.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="setupAction">Delegate to specify options for persistence. For example setting a KMS Key ID.</param>
+        /// <returns></returns>
+        public static IDataProtectionBuilder PersistKeysToAWSSystemsManager(this IDataProtectionBuilder builder, Action<PersistOptions> setupAction = null)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.Services.TryAddAWSService<IAmazonSimpleSystemsManagement>();
+            if (setupAction != null)
+            {
+                builder.Services.Configure(setupAction);
+            }
+
+            builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
+            {
+                var ssmClient = services.GetRequiredService<IAmazonSimpleSystemsManagement>();
+                var persistOptions = services.GetRequiredService<IOptions<PersistOptions>>();
+
+                var loggerFactory = services.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
+                return new ConfigureOptions<KeyManagementOptions>(options =>
+                {
+                    options.XmlRepository = new SSMXmlRepository(ssmClient, persistOptions.Value.ParameterNamePrefix, persistOptions.Value, loggerFactory);
+                });
+            });
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Register AWS Systems Manager (SSM) to persist the ASP.NET Core DataProtection framework keys. Keys will be stored in SSM's 
         /// Parameter Store using the prefix specified by the parameterNamePrefix parameter. It is expected that only DataProtection keys will be stored
         /// with this prefix.
         /// </summary>
