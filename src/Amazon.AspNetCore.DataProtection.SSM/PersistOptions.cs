@@ -15,6 +15,7 @@ Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Amazon.SimpleSystemsManagement;
 
 namespace Amazon.AspNetCore.DataProtection.SSM
 {
@@ -28,5 +29,11 @@ namespace Amazon.AspNetCore.DataProtection.SSM
         /// don't specify a key ID, the system uses the default key associated with your AWS account.
         /// </summary>
         public string KMSKeyId { get; set; }
+
+        /// <summary>
+        /// Whether the store is allowed to create SNN parameters using the Advanced Tier pricing in case that the stored key is to big for standard tier.
+        /// Standard tier maximum size is 4096 characters (4KB).
+        /// </summary>
+        public bool CanUseAdvancedTier { get; set; }
     }
 }

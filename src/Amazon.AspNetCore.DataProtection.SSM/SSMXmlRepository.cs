@@ -26,6 +26,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Amazon.Runtime;
 using System.Reflection;
+using Amazon.SimpleSystemsManagement;
 
 namespace Amazon.AspNetCore.DataProtection.SSM
 {
@@ -60,7 +61,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM
 
             AddUserAgentHandlerToClient(_ssmClient);
 
-            if(loggerFactory != null)
+            if (loggerFactory != null)
             {
                 _logger = loggerFactory?.CreateLogger<SSMXmlRepository>();
             }
@@ -104,26 +105,26 @@ namespace Amazon.AspNetCore.DataProtection.SSM
                 {
                     response = await _ssmClient.GetParametersByPathAsync(request);
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     _logger.LogError($"Error calling SSM to get parameters starting with {_parameterNamePrefix}: {e.Message}");
                     throw;
                 }
 
-                foreach(var parameter in response.Parameters)
+                foreach (var parameter in response.Parameters)
                 {
                     try
                     {
                         var xml = XElement.Parse(parameter.Value);
                         results.Add(xml);
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         _logger.LogError($"Error parsing key {parameter.Name}, key will be skipped: {e.Message}");
                     }
                 }
 
-            } while(!string.IsNullOrEmpty(response.NextToken));
+            } while (!string.IsNullOrEmpty(response.NextToken));
 
             _logger.LogInformation($"Loaded {results.Count} DataProtection keys");
             return results;
@@ -141,22 +142,49 @@ namespace Amazon.AspNetCore.DataProtection.SSM
 
         private async Task StoreElementAsync(XElement element, string friendlyName)
         {
-            var parameterName = _parameterNamePrefix + 
+            var parameterName = _parameterNamePrefix +
                             (friendlyName ??
                             element.Attribute("id")?.Value ??
                             Guid.NewGuid().ToString());
+
+            var tier = ParameterTier.Standard;
+            var keyValue = element.ToString();
+            var keyLength = keyValue.Length;
+            // Check if the value is too big for the advanced tier (8192 characters/ 8KB), in this case the key generation is not suitable for keys that should be stored as SSN parmameter.
+            int advancedTierMaxSize = 8192;
+            if (keyLength > advancedTierMaxSize)
+            {
+                _logger.LogError($"DataProtection key has a length of {keyLength} which exeeds the maximum SSN parameter size of {advancedTierMaxSize}. Please conside using another key provider or key store.");
+                throw new Exception($"Could not save DataProtection key to SSN parameter. DataProtection key has a length of {keyLength} which exeeds the maximum SSN parameter size of {advancedTierMaxSize}. Please conside using another key provider or key store.");
+            }
+
+            // Check if the value is too big for the standard tier and try to use the advanced tier in that case.
+            // 4096 characters (4KB) is the maximum size for the standard tier.
+            var standardTierMaxSize = 4096;
+            if (keyLength > standardTierMaxSize)
+            {
+                _logger.LogInformation($"DataProtection key has a length of {keyLength} which exeeds the maximum standard tier SSN parameter size of {standardTierMaxSize} (4KB), checking if advanced tier is configured.");
+                if (_options == null || !_options.CanUseAdvancedTier)
+                {
+                    _logger.LogError($"DataProtection Key has {keyLength} characters which exceeds the limit of {standardTierMaxSize} characters of the standard tier and usage of advanced tier is not configured.");
+                    throw new Exception($"Could not save DataProtection key to SSN parameter. Key has {keyLength} characters which exceeds the limit of {standardTierMaxSize} characters of the standard tier and usage of advanced tier is not configured.");
+                } 
+            } 
+
+            _logger.LogInformation($"{tier.ToString()} tier will be used to store the DataProtection key as SSN parameter, tier was configured based on the key lenght ({keyLength}).");
 
             try
             {
                 var request = new PutParameterRequest
                 {
                     Name = parameterName,
-                    Value = element.ToString(),
+                    Value = keyValue,
                     Type = ParameterType.SecureString,
-                    Description = "ASP.NET Core DataProtection Key"
+                    Description = "ASP.NET Core DataProtection Key",
+                    Tier = tier
                 };
 
-                if(!string.IsNullOrEmpty(_options.KMSKeyId))
+                if (!string.IsNullOrEmpty(_options.KMSKeyId))
                 {
                     request.KeyId = _options.KMSKeyId;
                 }
@@ -165,7 +193,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM
 
                 _logger.LogInformation($"Saved DataProtection key to SSM Parameter Store with parameter name {parameterName}");
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _logger.LogError($"Error saving DataProtection key to SSM Parameter Store with parameter name {parameterName}: {e.Message}");
                 throw;
