@@ -41,7 +41,7 @@ The AWS credentials used must have access to the **ssm:PutParameter** and **ssm:
 service operations from AWS System Manager. Below is an example IAM policy
 for those actions.
 
-```json
+```javascript
 {
     "Version": "2012-10-17",
     "Statement": [
