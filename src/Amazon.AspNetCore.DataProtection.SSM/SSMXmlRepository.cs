@@ -23,10 +23,8 @@ using Amazon.SimpleSystemsManagement.Model;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.DependencyInjection;
 using Amazon.Runtime;
-using System.Reflection;
-using Amazon.SimpleSystemsManagement;
+using System.Reflection; 
 
 namespace Amazon.AspNetCore.DataProtection.SSM
 {
@@ -150,12 +148,12 @@ namespace Amazon.AspNetCore.DataProtection.SSM
             var tier = ParameterTier.Standard;
             var keyValue = element.ToString();
             var keyLength = keyValue.Length;
-            // Check if the value is too big for the advanced tier (8192 characters/ 8KB), in this case the key generation is not suitable for keys that should be stored as SSN parmameter.
+            // Check if the value is too big for the advanced tier (8192 characters/ 8KB), in this case the key generation is not suitable for keys that should be stored as SSM parmameter.
             int advancedTierMaxSize = 8192;
             if (keyLength > advancedTierMaxSize)
             {
-                _logger.LogError($"DataProtection key has a length of {keyLength} which exeeds the maximum SSN parameter size of {advancedTierMaxSize}. Please conside using another key provider or key store.");
-                throw new Exception($"Could not save DataProtection key to SSN parameter. DataProtection key has a length of {keyLength} which exeeds the maximum SSN parameter size of {advancedTierMaxSize}. Please conside using another key provider or key store.");
+                _logger.LogError($"DataProtection key has a length of {keyLength} which exceeds the maximum SSM parameter size of {advancedTierMaxSize}. Please consider using another key provider or key store.");
+                throw new SSMParameterToLongException($"Could not save DataProtection key to SSM parameter. DataProtection key has a length of {keyLength} which exceeds the maximum SSM parameter size of {advancedTierMaxSize}. Please consider using another key provider or key store.");
             }
 
             // Check if the value is too big for the standard tier and try to use the advanced tier in that case.
@@ -163,15 +161,15 @@ namespace Amazon.AspNetCore.DataProtection.SSM
             var standardTierMaxSize = 4096;
             if (keyLength > standardTierMaxSize)
             {
-                _logger.LogInformation($"DataProtection key has a length of {keyLength} which exeeds the maximum standard tier SSN parameter size of {standardTierMaxSize} (4KB), checking if advanced tier is configured.");
-                if (_options == null || !_options.CanUseAdvancedTier)
+                _logger.LogInformation($"DataProtection key has a length of {keyLength} which exceeds the maximum standard tier SSM parameter size of {standardTierMaxSize} (4KB), checking if advanced tier is configured.");
+                if (_options == null || _options.TierStorageMode == ParameterTier.Standard)
                 {
                     _logger.LogError($"DataProtection Key has {keyLength} characters which exceeds the limit of {standardTierMaxSize} characters of the standard tier and usage of advanced tier is not configured.");
-                    throw new Exception($"Could not save DataProtection key to SSN parameter. Key has {keyLength} characters which exceeds the limit of {standardTierMaxSize} characters of the standard tier and usage of advanced tier is not configured.");
-                } 
-            } 
+                    throw new SSMParameterToLongException($"Could not save DataProtection key to SSM parameter. Key has {keyLength} characters which exceeds the limit of {standardTierMaxSize} characters of the standard tier and usage of advanced tier is not configured.");
+                }
+            }
 
-            _logger.LogInformation($"{tier.ToString()} tier will be used to store the DataProtection key as SSN parameter, tier was configured based on the key lenght ({keyLength}).");
+            _logger.LogInformation($"{tier} tier will be used to store the DataProtection key as SSM parameter, tier was configured based on the key length ({keyLength}).");
 
             try
             {

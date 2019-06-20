@@ -10,11 +10,12 @@
     <Compile Include="..\..\src\Amazon.AspNetCore.DataProtection.SSM\ExtensionMethods.cs" Link="LinkedFiles\ExtensionMethods.cs" />
     <Compile Include="..\..\src\Amazon.AspNetCore.DataProtection.SSM\PersistOptions.cs" Link="LinkedFiles\PersistOptions.cs" />
     <Compile Include="..\..\src\Amazon.AspNetCore.DataProtection.SSM\SSMXmlRepository.cs" Link="LinkedFiles\SSMXmlRepository.cs" />
+    <Compile Include="..\..\src\Amazon.AspNetCore.DataProtection.SSM\SSMParameterToLongException.cs" Link="LinkedFiles\SSMParameterToLongException.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.3.6" />
-    <PackageReference Include="AWSSDK.SimpleSystemsManagement" Version="3.3.35.4" />
+    <PackageReference Include="AWSSDK.SimpleSystemsManagement" Version="3.3.103.2" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.Extensions" Version="2.0.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
     <PackageReference Include="Moq" Version="4.8.2" />
