@@ -29,10 +29,9 @@ namespace Amazon.AspNetCore.DataProtection.SSM
         public string KMSKeyId { get; set; }
 
         /// <summary>
-        /// Highest storage tier that can get used. Higher tiers allow more characters which is required for larger keys.
-        /// Even if a higher tier is configured, the lowest possible tier will be chosen when creating the parameter.
-        /// The default tier is 'Standard' (4096 characters).
+        /// Storage mode to decide which parameter storage tier will be used. Default is <see cref="TierStorageMode.StandardOnly"/>.
+        /// Higher tiers allow more characters which is required for larger keys.
         /// </summary>
-        public ParameterTier TierStorageMode { get; set; } = ParameterTier.Standard;
+        public TierStorageMode TierStorageMode { get; set; } = TierStorageMode.StandardOnly;
     }
 }

@@ -145,38 +145,16 @@ namespace Amazon.AspNetCore.DataProtection.SSM
                             element.Attribute("id")?.Value ??
                             Guid.NewGuid().ToString());
 
-            var tier = ParameterTier.Standard;
-            var keyValue = element.ToString();
-            var keyLength = keyValue.Length;
-            // Check if the value is too big for the advanced tier (8192 characters/ 8KB), in this case the key generation is not suitable for keys that should be stored as SSM parmameter.
-            int advancedTierMaxSize = 8192;
-            if (keyLength > advancedTierMaxSize)
-            {
-                _logger.LogError($"DataProtection key has a length of {keyLength} which exceeds the maximum SSM parameter size of {advancedTierMaxSize}. Please consider using another key provider or key store.");
-                throw new SSMParameterToLongException($"Could not save DataProtection key to SSM parameter. DataProtection key has a length of {keyLength} which exceeds the maximum SSM parameter size of {advancedTierMaxSize}. Please consider using another key provider or key store.");
-            }
-
-            // Check if the value is too big for the standard tier and try to use the advanced tier in that case.
-            // 4096 characters (4KB) is the maximum size for the standard tier.
-            var standardTierMaxSize = 4096;
-            if (keyLength > standardTierMaxSize)
-            {
-                _logger.LogInformation($"DataProtection key has a length of {keyLength} which exceeds the maximum standard tier SSM parameter size of {standardTierMaxSize} (4KB), checking if advanced tier is configured.");
-                if (_options == null || _options.TierStorageMode == ParameterTier.Standard)
-                {
-                    _logger.LogError($"DataProtection Key has {keyLength} characters which exceeds the limit of {standardTierMaxSize} characters of the standard tier and usage of advanced tier is not configured.");
-                    throw new SSMParameterToLongException($"Could not save DataProtection key to SSM parameter. Key has {keyLength} characters which exceeds the limit of {standardTierMaxSize} characters of the standard tier and usage of advanced tier is not configured.");
-                }
-            }
-
-            _logger.LogInformation($"{tier} tier will be used to store the DataProtection key as SSM parameter, tier was configured based on the key length ({keyLength}).");
-
+            var elementValue = element.ToString();
+            var tier = GetParameterTier(elementValue);
+            _logger.LogInformation($"Using SSM parameter tier {tier} for DataProtection element {parameterName}");
+            
             try
             {
                 var request = new PutParameterRequest
                 {
                     Name = parameterName,
-                    Value = keyValue,
+                    Value = elementValue,
                     Type = ParameterType.SecureString,
                     Description = "ASP.NET Core DataProtection Key",
                     Tier = tier
@@ -196,6 +174,52 @@ namespace Amazon.AspNetCore.DataProtection.SSM
                 _logger.LogError($"Error saving DataProtection key to SSM Parameter Store with parameter name {parameterName}: {e.Message}");
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="ParameterTier"/> to use for the <paramref name="elementValue"/> based on the <paramref name="elementValue"/> length and configured <see cref="TierStorageMode"/>. 
+        /// </summary>
+        private ParameterTier GetParameterTier(string elementValue)
+        { 
+            var elementValueLength = elementValue.Length;
+            var storageMode = _options.TierStorageMode;
+
+            _logger.LogDebug($"Using tier storage mode {storageMode} to decide which SSM parameter tier to use for DataProtection element.");
+
+            // Check if the value is too large for the advanced tier (8192 characters/ 8KB), in this case the key generation is not suitable for keys that should be stored as SSM parameter.
+            const int advancedTierMaxSize = 8192;
+            if (elementValueLength > advancedTierMaxSize)
+            { 
+                throw new SSMParameterToLongException($"Could not save DataProtection element to SSM parameter. " +
+                                                      $"DataProtection element has a length of {elementValueLength} which exceeds the maximum SSM parameter size of {advancedTierMaxSize}. " +
+                                                      $"Please consider using another key provider or key store.");
+            }
+
+            // Check if advanced tier has to be used anyway due to tier storage mode
+            if (storageMode == TierStorageMode.AdvancedOnly)
+                return ParameterTier.Advanced;
+
+            // Check if the value is too big for the standard tier and try to use the advanced tier if the storage mode allows it.
+            // 4096 characters (4KB) is the maximum size for the standard tier.
+            const int standardTierMaxSize = 4096;
+            if (elementValueLength > standardTierMaxSize)
+            {
+                _logger.LogDebug($"DataProtection element has a length of {elementValueLength} which exceeds the maximum standard tier SSM parameter size of {standardTierMaxSize} (4KB), checking if advanced tier usage is allowed.");
+
+                // tier is too large for standard tier, check if advanced tier is allowed
+                if (_options == null || _options.TierStorageMode == TierStorageMode.StandardOnly)
+                { 
+                    throw new SSMParameterToLongException($"Could not save DataProtection element to SSM parameter. " +
+                                                          $"Element has {elementValueLength} characters which exceeds the limit of {standardTierMaxSize} characters of the standard parameter tier and usage of advanced tier is not configured." +
+                                                          $"Please consider using another key provider or key store.");
+                }
+
+                _logger.LogDebug(
+                    $"Tier mode allows usage of advanced SSM parameter tier for large DataProtection element.");
+                return ParameterTier.Advanced;
+            }
+             
+            return ParameterTier.Standard;
         }
 
         #region IDisposable Support
