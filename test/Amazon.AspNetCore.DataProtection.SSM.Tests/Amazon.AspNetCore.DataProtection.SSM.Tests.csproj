@@ -11,6 +11,7 @@
     <Compile Include="..\..\src\Amazon.AspNetCore.DataProtection.SSM\PersistOptions.cs" Link="LinkedFiles\PersistOptions.cs" />
     <Compile Include="..\..\src\Amazon.AspNetCore.DataProtection.SSM\SSMXmlRepository.cs" Link="LinkedFiles\SSMXmlRepository.cs" />
     <Compile Include="..\..\src\Amazon.AspNetCore.DataProtection.SSM\SSMParameterToLongException.cs" Link="LinkedFiles\SSMParameterToLongException.cs" />
+    <Compile Include="..\..\src\Amazon.AspNetCore.DataProtection.SSM\TierStorageMode.cs" Link="LinkedFiles\TierStorageMode.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -104,7 +104,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
 
             var elements = repository.GetAllElements();
             Assert.Equal(2, elements.Count);
-            foreach(var key in elements)
+            foreach (var key in elements)
             {
                 Assert.NotNull(key);
             }
@@ -163,7 +163,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
 
                     Assert.True(request.WithDecryption);
 
-                    if(callCount == 1)
+                    if (callCount == 1)
                     {
                         Assert.NotNull(request.NextToken);
                         Assert.Equal("NextPageToken", request.NextToken);
@@ -363,6 +363,216 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
 
             XElement key = XElement.Parse(keyText);
             repository.StoreElement(key, "bar");
+        }
+
+        [Fact]
+        public void StorageModeStandardOnlyMaxSize()
+        {
+            var keyText = GenerateKeyOfLength(4096);
+
+            _mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
+                .Callback<PutParameterRequest, CancellationToken>((request, token) =>
+                {
+                    Assert.Equal(keyText, request.Value);
+                    Assert.Equal(ParameterTier.Standard, request.Tier);
+                })
+                .Returns((PutParameterRequest r, CancellationToken token) => Task.FromResult(new PutParameterResponse()));
+
+            var repository = new SSMXmlRepository(_mockSSM.Object, BasePrefix, new PersistOptions
+            {
+                TierStorageMode = TierStorageMode.StandardOnly
+            }, null);
+
+            XElement key = XElement.Parse(keyText);
+            repository.StoreElement(key, null);
+        }
+
+        [Fact]
+        public void StorageModeStandardOnlyTooLarge()
+        {
+            var keyText = GenerateKeyOfLength(4096 + 1);
+
+            _mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
+                .Callback<PutParameterRequest, CancellationToken>((request, token) =>
+                {
+                })
+                .Returns((PutParameterRequest r, CancellationToken token) => Task.FromResult(new PutParameterResponse()));
+
+            var repository = new SSMXmlRepository(_mockSSM.Object, BasePrefix, new PersistOptions
+            {
+                TierStorageMode = TierStorageMode.StandardOnly
+            }, null);
+
+            XElement key = XElement.Parse(keyText);
+            var ex = Assert.Throws<AggregateException>(() => repository.StoreElement(key, null));
+            var ssmException = ex.InnerExceptions.SingleOrDefault(x => x.GetType() == typeof(SSMParameterToLongException));
+            Assert.NotNull(ssmException);
+        }
+
+        [Fact]
+        public void StorageModeAdvancedOnlyBelowAdvancedSize()
+        {
+            var keyText = GenerateKeyOfLength(4096);
+
+            _mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
+                .Callback<PutParameterRequest, CancellationToken>((request, token) =>
+                {
+                    Assert.Equal(keyText, request.Value);
+                    Assert.Equal(ParameterTier.Advanced, request.Tier);
+                })
+                .Returns((PutParameterRequest r, CancellationToken token) => Task.FromResult(new PutParameterResponse()));
+
+            var repository = new SSMXmlRepository(_mockSSM.Object, BasePrefix, new PersistOptions
+            {
+                TierStorageMode = TierStorageMode.AdvancedOnly
+            }, null);
+
+            XElement key = XElement.Parse(keyText);
+            repository.StoreElement(key, null);
+        }
+
+        [Fact]
+        public void StorageModeAdvancedOnlyMaxSize()
+        {
+            var keyText = GenerateKeyOfLength(8192);
+
+            _mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
+                .Callback<PutParameterRequest, CancellationToken>((request, token) =>
+                {
+                    Assert.Equal(keyText, request.Value);
+                    Assert.Equal(ParameterTier.Advanced, request.Tier);
+                })
+                .Returns((PutParameterRequest r, CancellationToken token) => Task.FromResult(new PutParameterResponse()));
+
+            var repository = new SSMXmlRepository(_mockSSM.Object, BasePrefix, new PersistOptions
+            {
+                TierStorageMode = TierStorageMode.AdvancedOnly
+            }, null);
+
+            XElement key = XElement.Parse(keyText);
+            repository.StoreElement(key, null);
+        }
+
+        [Fact]
+        public void StorageModeAdvancedOnlyTooLarge()
+        {
+            var keyText = GenerateKeyOfLength(8192 + 1);
+
+            _mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
+                .Callback<PutParameterRequest, CancellationToken>((request, token) =>
+                {
+                })
+                .Returns((PutParameterRequest r, CancellationToken token) => Task.FromResult(new PutParameterResponse()));
+
+            var repository = new SSMXmlRepository(_mockSSM.Object, BasePrefix, new PersistOptions
+            {
+                TierStorageMode = TierStorageMode.AdvancedOnly
+            }, null);
+
+            XElement key = XElement.Parse(keyText);
+            var ex = Assert.Throws<AggregateException>(() => repository.StoreElement(key, null));
+            var ssmException = ex.InnerExceptions.SingleOrDefault(x => x.GetType() == typeof(SSMParameterToLongException));
+            Assert.NotNull(ssmException);
+        }
+
+        [Fact]
+        public void StorageModeAdvancedUpgradeableBelowAdvancedSize()
+        {
+            var keyText = GenerateKeyOfLength(4096);
+
+            _mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
+                .Callback<PutParameterRequest, CancellationToken>((request, token) =>
+                {
+                    Assert.Equal(keyText, request.Value);
+                    Assert.Equal(ParameterTier.Standard, request.Tier);
+                })
+                .Returns((PutParameterRequest r, CancellationToken token) => Task.FromResult(new PutParameterResponse()));
+
+            var repository = new SSMXmlRepository(_mockSSM.Object, BasePrefix, new PersistOptions
+            {
+                TierStorageMode = TierStorageMode.AdvancedUpgradeable
+            }, null);
+
+            XElement key = XElement.Parse(keyText);
+            repository.StoreElement(key, null);
+        }
+
+        [Fact]
+        public void StorageModeAdvancedUpgradeableAboveStandardSize()
+        {
+            var keyText = GenerateKeyOfLength(4096 + 1);
+
+            _mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
+                .Callback<PutParameterRequest, CancellationToken>((request, token) =>
+                {
+                    Assert.Equal(keyText, request.Value);
+                    Assert.Equal(ParameterTier.Advanced, request.Tier);
+                })
+                .Returns((PutParameterRequest r, CancellationToken token) => Task.FromResult(new PutParameterResponse()));
+
+            var repository = new SSMXmlRepository(_mockSSM.Object, BasePrefix, new PersistOptions
+            {
+                TierStorageMode = TierStorageMode.AdvancedUpgradeable
+            }, null);
+
+            XElement key = XElement.Parse(keyText);
+            repository.StoreElement(key, null);
+        }
+
+        [Fact]
+        public void StorageModeAdvancedUpgradeableMaxSize()
+        {
+            var keyText = GenerateKeyOfLength(8192);
+
+            _mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
+                .Callback<PutParameterRequest, CancellationToken>((request, token) =>
+                {
+                    Assert.Equal(keyText, request.Value);
+                    Assert.Equal(ParameterTier.Advanced, request.Tier);
+                })
+                .Returns((PutParameterRequest r, CancellationToken token) => Task.FromResult(new PutParameterResponse()));
+
+            var repository = new SSMXmlRepository(_mockSSM.Object, BasePrefix, new PersistOptions
+            {
+                TierStorageMode = TierStorageMode.AdvancedUpgradeable
+            }, null);
+
+            XElement key = XElement.Parse(keyText);
+            repository.StoreElement(key, null);
+        }
+
+        [Fact]
+        public void StorageModeAdvancedUpgradableTooLarge()
+        {
+            var keyText = GenerateKeyOfLength(8192 + 1);
+
+            _mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
+                .Callback<PutParameterRequest, CancellationToken>((request, token) =>
+                {
+                })
+                .Returns((PutParameterRequest r, CancellationToken token) => Task.FromResult(new PutParameterResponse()));
+
+            var repository = new SSMXmlRepository(_mockSSM.Object, BasePrefix, new PersistOptions
+            {
+                TierStorageMode = TierStorageMode.AdvancedUpgradeable
+            }, null);
+
+            XElement key = XElement.Parse(keyText);
+            var ex = Assert.Throws<AggregateException>(() => repository.StoreElement(key, null));
+            var ssmException = ex.InnerExceptions.SingleOrDefault(x => x.GetType() == typeof(SSMParameterToLongException));
+            Assert.NotNull(ssmException);
+        }
+
+        private string GenerateKeyOfLength(int length)
+        {
+            var start = "<key id=\"foo\">";
+            var end = "</key>";
+            var value = string.Empty;
+            for (int i = 0; i < length - start.Length - end.Length; i++)
+            {
+                value += ".";
+            }
+            return start + value + end;
         }
     }
 }
