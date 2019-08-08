@@ -211,11 +211,9 @@ namespace Amazon.AspNetCore.DataProtection.SSM
                 { 
                     throw new SSMParameterToLongException($"Could not save DataProtection element to SSM parameter. " +
                                                           $"Element has {elementValueLength} characters which exceeds the limit of {standardTierMaxSize} characters of the standard parameter tier and usage of advanced tier is not configured." +
-                                                          $"Please consider using another key provider or key store.");
+                                                          $"You can resolve this issue by changing the TierStorageMode to {nameof(TierStorageMode.AdvancedUpgradeable)} or {nameof(TierStorageMode.AdvancedOnly)} in the configuration.");
                 }
-
-                _logger.LogDebug(
-                    $"Tier mode allows usage of advanced SSM parameter tier for large DataProtection element.");
+ 
                 return ParameterTier.Advanced;
             }
              
