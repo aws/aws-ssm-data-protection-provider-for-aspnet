@@ -35,6 +35,34 @@ for tracking bugs and feature requests.
 * If it turns out that you may have found a bug,
   please open an [issue](https://github.com/aws/aws-ssm-data-protection-provider-for-aspnet/issues/new)
 
+## Permissions
+
+The AWS credentials used must have access to the **ssm:PutParameter** and **ssm:GetParametersByPath** 
+service operations from AWS System Manager. Below is an example IAM policy
+for those actions.
+
+```javascript
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "rule1",
+            "Effect": "Allow",
+            "Action": [
+                "ssm:PutParameter",
+                "ssm:GetParametersByPath"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+If the `KMSKeyId` property is set during the `PersistKeysToAWSSystemsManager` method then the IAM Policy
+will also need access to **kms:Encrypt** for the KMS key used.
+
+
+
 ## Contributing
 
 We welcome community contributions and pull requests. See
