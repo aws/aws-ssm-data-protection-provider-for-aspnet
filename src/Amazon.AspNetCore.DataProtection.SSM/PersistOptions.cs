@@ -12,9 +12,8 @@ Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
   express or implied. See the License for the specific language governing
   permissions and limitations under the License.
  */
-using System;
-using System.Collections.Generic;
-using System.Text;
+
+using Amazon.SimpleSystemsManagement;
 
 namespace Amazon.AspNetCore.DataProtection.SSM
 {
@@ -28,5 +27,11 @@ namespace Amazon.AspNetCore.DataProtection.SSM
         /// don't specify a key ID, the system uses the default key associated with your AWS account.
         /// </summary>
         public string KMSKeyId { get; set; }
+
+        /// <summary>
+        /// Storage mode to decide which parameter storage tier will be used. Default is <see cref="TierStorageMode.StandardOnly"/>.
+        /// Higher tiers allow more characters which is required for larger keys.
+        /// </summary>
+        public TierStorageMode TierStorageMode { get; set; } = TierStorageMode.StandardOnly;
     }
 }
