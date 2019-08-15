@@ -23,9 +23,8 @@ using Amazon.SimpleSystemsManagement.Model;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.DependencyInjection;
 using Amazon.Runtime;
-using System.Reflection;
+using System.Reflection; 
 
 namespace Amazon.AspNetCore.DataProtection.SSM
 {
@@ -60,7 +59,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM
 
             AddUserAgentHandlerToClient(_ssmClient);
 
-            if(loggerFactory != null)
+            if (loggerFactory != null)
             {
                 _logger = loggerFactory?.CreateLogger<SSMXmlRepository>();
             }
@@ -104,26 +103,26 @@ namespace Amazon.AspNetCore.DataProtection.SSM
                 {
                     response = await _ssmClient.GetParametersByPathAsync(request);
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     _logger.LogError($"Error calling SSM to get parameters starting with {_parameterNamePrefix}: {e.Message}");
                     throw;
                 }
 
-                foreach(var parameter in response.Parameters)
+                foreach (var parameter in response.Parameters)
                 {
                     try
                     {
                         var xml = XElement.Parse(parameter.Value);
                         results.Add(xml);
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         _logger.LogError($"Error parsing key {parameter.Name}, key will be skipped: {e.Message}");
                     }
                 }
 
-            } while(!string.IsNullOrEmpty(response.NextToken));
+            } while (!string.IsNullOrEmpty(response.NextToken));
 
             _logger.LogInformation($"Loaded {results.Count} DataProtection keys");
             return results;
@@ -141,22 +140,27 @@ namespace Amazon.AspNetCore.DataProtection.SSM
 
         private async Task StoreElementAsync(XElement element, string friendlyName)
         {
-            var parameterName = _parameterNamePrefix + 
+            var parameterName = _parameterNamePrefix +
                             (friendlyName ??
                             element.Attribute("id")?.Value ??
                             Guid.NewGuid().ToString());
 
+            var elementValue = element.ToString();
+            var tier = GetParameterTier(elementValue);
+            _logger.LogInformation($"Using SSM parameter tier {tier} for DataProtection element {parameterName}");
+            
             try
             {
                 var request = new PutParameterRequest
                 {
                     Name = parameterName,
-                    Value = element.ToString(),
+                    Value = elementValue,
                     Type = ParameterType.SecureString,
-                    Description = "ASP.NET Core DataProtection Key"
+                    Description = "ASP.NET Core DataProtection Key",
+                    Tier = tier
                 };
 
-                if(!string.IsNullOrEmpty(_options.KMSKeyId))
+                if (!string.IsNullOrEmpty(_options.KMSKeyId))
                 {
                     request.KeyId = _options.KMSKeyId;
                 }
@@ -165,11 +169,55 @@ namespace Amazon.AspNetCore.DataProtection.SSM
 
                 _logger.LogInformation($"Saved DataProtection key to SSM Parameter Store with parameter name {parameterName}");
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _logger.LogError($"Error saving DataProtection key to SSM Parameter Store with parameter name {parameterName}: {e.Message}");
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="ParameterTier"/> to use for the <paramref name="elementValue"/> based on the <paramref name="elementValue"/> length and configured <see cref="TierStorageMode"/>. 
+        /// </summary>
+        private ParameterTier GetParameterTier(string elementValue)
+        { 
+            var elementValueLength = elementValue.Length;
+            var storageMode = _options.TierStorageMode;
+
+            _logger.LogDebug($"Using tier storage mode {storageMode} to decide which SSM parameter tier to use for DataProtection element.");
+
+            // Check if the value is too large for the advanced tier (8192 characters/ 8KB), in this case the key generation is not suitable for keys that should be stored as SSM parameter.
+            const int advancedTierMaxSize = 8192;
+            if (elementValueLength > advancedTierMaxSize)
+            { 
+                throw new SSMParameterToLongException($"Could not save DataProtection element to SSM parameter. " +
+                                                      $"DataProtection element has a length of {elementValueLength} which exceeds the maximum SSM parameter size of {advancedTierMaxSize}. " +
+                                                      $"Please consider using another key provider or key store.");
+            }
+
+            // Check if advanced tier has to be used anyway due to tier storage mode
+            if (storageMode == TierStorageMode.AdvancedOnly)
+                return ParameterTier.Advanced;
+
+            // Check if the value is too big for the standard tier and try to use the advanced tier if the storage mode allows it.
+            // 4096 characters (4KB) is the maximum size for the standard tier.
+            const int standardTierMaxSize = 4096;
+            if (elementValueLength > standardTierMaxSize)
+            {
+                _logger.LogDebug($"DataProtection element has a length of {elementValueLength} which exceeds the maximum standard tier SSM parameter size of {standardTierMaxSize} (4KB), checking if advanced tier usage is allowed.");
+
+                // tier is too large for standard tier, check if advanced tier is allowed
+                if (_options == null || _options.TierStorageMode == TierStorageMode.StandardOnly)
+                { 
+                    throw new SSMParameterToLongException($"Could not save DataProtection element to SSM parameter. " +
+                                                          $"Element has {elementValueLength} characters which exceeds the limit of {standardTierMaxSize} characters of the standard parameter tier and usage of advanced tier is not configured." +
+                                                          $"You can resolve this issue by changing the TierStorageMode to {nameof(TierStorageMode.AdvancedUpgradeable)} or {nameof(TierStorageMode.AdvancedOnly)} in the configuration.");
+                }
+ 
+                return ParameterTier.Advanced;
+            }
+             
+            return ParameterTier.Standard;
         }
 
         #region IDisposable Support
