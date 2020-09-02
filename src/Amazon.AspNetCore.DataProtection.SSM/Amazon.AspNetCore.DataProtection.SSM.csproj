@@ -20,7 +20,7 @@
     <Company>Amazon Web Services</Company>
     <SignAssembly>true</SignAssembly>
     <SignOnBuild>true</SignOnBuild>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
   </PropertyGroup>
 
   <Choose>
@@ -38,7 +38,7 @@
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.3.101" />
-    <PackageReference Include="AWSSDK.SimpleSystemsManagement" Version="3.3.102.2" />
+    <PackageReference Include="AWSSDK.SimpleSystemsManagement" Version="3.5.1.7" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.Extensions" Version="2.0.3" />
   </ItemGroup>
 
