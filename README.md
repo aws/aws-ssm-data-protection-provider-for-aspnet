@@ -22,8 +22,7 @@ public void ConfigureServices(IServiceCollection services)
     services.AddDataProtection()
         .PersistKeysToAWSSystemsManager("/MyApplication/DataProtection");
 
-    services.AddMvc()
-        .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+    services.AddMvc();
 }
 ```
 ## Getting Help
