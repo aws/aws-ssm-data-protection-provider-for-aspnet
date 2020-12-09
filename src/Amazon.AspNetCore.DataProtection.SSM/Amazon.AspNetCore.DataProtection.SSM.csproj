@@ -14,8 +14,8 @@
     <Copyright>2018</Copyright>
     <PackageTags>AWS;Amazon;SSM;Systems Manager</PackageTags>
     <PackageProjectUrl>https://github.com/aws/aws-ssm-data-protection-provider-for-aspnet</PackageProjectUrl>
-    <PackageLicenseUrl>http://aws.amazon.com/apache2.0/</PackageLicenseUrl>
-    <PackageIconUrl>https://sdk-for-net.amazonwebservices.com/images/AWSLogo128x128.png</PackageIconUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageIcon>icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/aws/aws-ssm-data-protection-provider-for-aspnet</RepositoryUrl>
     <Company>Amazon Web Services</Company>
     <SignAssembly>true</SignAssembly>
@@ -35,6 +35,11 @@
       </PropertyGroup>
     </Otherwise>
   </Choose>
+
+  <ItemGroup>
+    <None Include="../../LICENSE" Pack="true" PackagePath="" />
+    <None Include="../../icon.png" Pack="true" PackagePath="" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.3.101" />
