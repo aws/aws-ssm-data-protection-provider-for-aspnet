@@ -1,3 +1,7 @@
+### Release 2021-03-30
+* **Amazon.AspNetCore.DataProtection.SSM (2.1.0)**
+    * Update AWS SDK dependencies to 3.7
+
 ### Release 2020-10-09
 * **Amazon.AspNetCore.DataProtection.SSM (2.0.0)**
     * Merged PR [#21](https://github.com/aws/aws-ssm-data-protection-provider-for-aspnet/pull/21) Upgrade dependency of .netcoresetup to 3.3.101. Thanks [Yuxuan Lin](https://github.com/YuxuanLin)
