@@ -1,5 +1,5 @@
 ### Release 2022-09-22
-* **Amazon.AspNetCore.DataProtection.SSM (2.1.0)**
+* **Amazon.AspNetCore.DataProtection.SSM (3.0.0)**
     * Breaking change remove target .NET Standard 2.0 and add .NET Core 3.1 and .NET 6
 	* Merged PR [#42](https://github.com/aws/aws-ssm-data-protection-provider-for-aspnet/pull/42) Updated AWS and Microsoft dependencies. Thanks [Tristan Hyams](https://github.com/houseofcat)
 	
