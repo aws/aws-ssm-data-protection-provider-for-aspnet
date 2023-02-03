@@ -102,11 +102,11 @@ namespace Amazon.AspNetCore.DataProtection.SSM
                 request.NextToken = response?.NextToken;
                 try
                 {
-                    response = await _ssmClient.GetParametersByPathAsync(request);
+                    response = await _ssmClient.GetParametersByPathAsync(request).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError($"Error calling SSM to get parameters starting with {_parameterNamePrefix}: {e.Message}");
+                    _logger.LogError(e, $"Error calling SSM to get parameters starting with {_parameterNamePrefix}: {e.Message}");
                     throw;
                 }
 
@@ -117,9 +117,11 @@ namespace Amazon.AspNetCore.DataProtection.SSM
                         var xml = XElement.Parse(parameter.Value);
                         results.Add(xml);
                     }
+#pragma warning disable CA1031 // Do not catch general exception types
                     catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
                     {
-                        _logger.LogError($"Error parsing key {parameter.Name}, key will be skipped: {e.Message}");
+                        _logger.LogError(e, $"Error parsing key {parameter.Name}, key will be skipped: {e.Message}");
                     }
                 }
 
@@ -173,13 +175,13 @@ namespace Amazon.AspNetCore.DataProtection.SSM
                     request.KeyId = _options.KMSKeyId;
                 }
 
-                await _ssmClient.PutParameterAsync(request);
+                await _ssmClient.PutParameterAsync(request).ConfigureAwait(false);
 
                 _logger.LogInformation($"Saved DataProtection key to SSM Parameter Store with parameter name {parameterName}");
             }
             catch (Exception e)
             {
-                _logger.LogError($"Error saving DataProtection key to SSM Parameter Store with parameter name {parameterName}: {e.Message}");
+                _logger.LogError(e, $"Error saving DataProtection key to SSM Parameter Store with parameter name {parameterName}: {e.Message}");
                 throw;
             }
         }
@@ -229,7 +231,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM
         }
 
         #region IDisposable Support
-        private bool disposedValue = false;
+        private bool disposedValue;
 
         protected virtual void Dispose(bool disposing)
         {
@@ -256,7 +258,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM
             {
                 amazonSimpleSystemsManagementClient.BeforeRequestEvent += (object sender, RequestEventArgs e) =>
                 {
-                    var args = e as Amazon.Runtime.WebServiceRequestEventArgs;
+                    var args = e as WebServiceRequestEventArgs;
                     if (args == null || !args.Headers.ContainsKey(UserAgentHeader))
                         return;
 
