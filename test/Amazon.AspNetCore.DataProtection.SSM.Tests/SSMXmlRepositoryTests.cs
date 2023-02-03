@@ -56,6 +56,9 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
                     Assert.NotNull(parsed);
 
                     Assert.Null(request.KeyId);
+
+                    Assert.NotNull(request.Tags);
+                    Assert.Empty(request.Tags);
                 })
                 .Returns((PutParameterRequest r, CancellationToken token) =>
                 {
@@ -63,6 +66,49 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
                 });
 
             var repository = new SSMXmlRepository(_mockSSM.Object, prefix, null, null);
+
+            XElement key = XElement.Parse(keyText);
+            repository.StoreElement(key, "bar");
+        }
+
+        [Fact]
+        public void AddKeyWithTags()
+        {
+            var prefix = "/" + BasePrefix + "/";
+            var keyText = "<key id=\"foo\"></key>";
+
+            _mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
+                .Callback<PutParameterRequest, CancellationToken>((request, token) =>
+                {
+                    Assert.NotNull(request.Name);
+                    Assert.Equal(prefix + "bar", request.Name);
+
+                    Assert.NotNull(request.Description);
+
+                    Assert.NotNull(request.Value);
+                    XElement parsed = XElement.Parse(request.Value);
+                    Assert.NotNull(parsed);
+
+                    Assert.Null(request.KeyId);
+
+                    Assert.NotNull(request.Tags);
+                    Assert.NotEmpty(request.Tags);
+                    Assert.Equal(2, request.Tags.Count);
+                    Assert.NotNull(request.Tags.Find(tag => tag.Key == "a"));
+                    Assert.Equal("1", request.Tags.Find(tag => tag.Key == "a").Value);
+                    Assert.NotNull(request.Tags.Find(tag => tag.Key == "b"));
+                    Assert.Equal("2", request.Tags.Find(tag => tag.Key == "b").Value);
+                })
+                .Returns((PutParameterRequest r, CancellationToken token) =>
+                {
+                    return Task.FromResult(new PutParameterResponse());
+                });
+
+            var options = new PersistOptions();
+            options.Tags["a"] = "1";
+            options.Tags["b"] = "2";
+
+            var repository = new SSMXmlRepository(_mockSSM.Object, prefix, options, null);
 
             XElement key = XElement.Parse(keyText);
             repository.StoreElement(key, "bar");

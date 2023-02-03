@@ -13,6 +13,7 @@ Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
   permissions and limitations under the License.
  */
 
+using System.Collections.Generic;
 using Amazon.SimpleSystemsManagement;
 
 namespace Amazon.AspNetCore.DataProtection.SSM
@@ -33,5 +34,10 @@ namespace Amazon.AspNetCore.DataProtection.SSM
         /// Higher tiers allow more characters which is required for larger keys.
         /// </summary>
         public TierStorageMode TierStorageMode { get; set; } = TierStorageMode.StandardOnly;
+
+        /// <summary>
+        /// The optional tags to apply to parameters created in the Parameter Store.
+        /// </summary>
+        public IDictionary<string, string> Tags { get; } = new Dictionary<string, string>();
     }
 }

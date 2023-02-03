@@ -14,17 +14,18 @@ Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  */
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 using Microsoft.AspNetCore.DataProtection.Repositories;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
+using Amazon.Runtime;
 using Amazon.SimpleSystemsManagement;
 using Amazon.SimpleSystemsManagement.Model;
-using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging.Abstractions;
-using Amazon.Runtime;
-using System.Reflection; 
 
 namespace Amazon.AspNetCore.DataProtection.SSM
 {
@@ -159,6 +160,13 @@ namespace Amazon.AspNetCore.DataProtection.SSM
                     Description = "ASP.NET Core DataProtection Key",
                     Tier = tier
                 };
+
+                if (_options.Tags?.Count > 0)
+                {
+                    request.Tags = _options.Tags
+                        .Select(tag => new Tag() { Key = tag.Key, Value = tag.Value })
+                        .ToList();
+                }
 
                 if (!string.IsNullOrEmpty(_options.KMSKeyId))
                 {
