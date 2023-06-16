@@ -1,4 +1,8 @@
 ### Release 2023-02-03
+* **Amazon.AspNetCore.DataProtection.SSM (3.1.1)**
+  * Update dependency of Microsoft.AspNetCore.DataProtection.Extensions to use the version that comes with the .NET runtime instead of bring in a specific version.
+
+### Release 2023-02-03
 * **Amazon.AspNetCore.DataProtection.SSM (3.1.0)**
 	* Merged PR [#48](https://github.com/aws/aws-ssm-data-protection-provider-for-aspnet/pull/48) Add support for adding tags to SSM parameters. Thanks [Martin Costello](https://github.com/martincostello)
 	* Merged PR [#49](https://github.com/aws/aws-ssm-data-protection-provider-for-aspnet/pull/49) Fix up code analysis warnings. Thanks [Martin Costello](https://github.com/martincostello)
