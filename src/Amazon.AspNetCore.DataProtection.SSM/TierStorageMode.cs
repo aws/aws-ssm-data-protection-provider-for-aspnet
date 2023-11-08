@@ -16,6 +16,10 @@
         /// <summary>
         /// Always use advanced tier.
         /// </summary>
-        AdvancedOnly
+        AdvancedOnly,
+        /// <summary>
+        /// Use IntelligentTiering
+        /// </summary>
+        IntelligentTiering
     }
 }

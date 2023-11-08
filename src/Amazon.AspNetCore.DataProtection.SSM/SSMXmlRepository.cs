@@ -209,6 +209,10 @@ namespace Amazon.AspNetCore.DataProtection.SSM
             if (storageMode == TierStorageMode.AdvancedOnly)
                 return ParameterTier.Advanced;
 
+            // Check if IntelligentTiering tier has to be used anyway due to tier storage mode
+            if (storageMode == TierStorageMode.IntelligentTiering)
+                return ParameterTier.IntelligentTiering;
+
             // Check if the value is too big for the standard tier and try to use the advanced tier if the storage mode allows it.
             // 4096 characters (4KB) is the maximum size for the standard tier.
             const int standardTierMaxSize = 4096;
