@@ -21,6 +21,7 @@
     <SignAssembly>true</SignAssembly>
     <SignOnBuild>true</SignOnBuild>
     <Version>3.2.0</Version>
+	<WarningsAsErrors>CA1727</WarningsAsErrors>
   </PropertyGroup>
 
   <Choose>
