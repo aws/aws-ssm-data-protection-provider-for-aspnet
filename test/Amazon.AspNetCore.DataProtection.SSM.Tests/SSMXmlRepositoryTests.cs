@@ -609,6 +609,28 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
             Assert.NotNull(ssmException);
         }
 
+        [Fact]
+        public void StorageModeIntelligentTiering()
+        {
+            var keyText = GenerateKeyOfLength(6000);
+
+            _mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
+                .Callback<PutParameterRequest, CancellationToken>((request, token) =>
+                {
+                    Assert.Equal(keyText, request.Value);
+                    Assert.Equal(ParameterTier.IntelligentTiering, request.Tier);
+                })
+                .Returns((PutParameterRequest r, CancellationToken token) => Task.FromResult(new PutParameterResponse()));
+
+            var repository = new SSMXmlRepository(_mockSSM.Object, BasePrefix, new PersistOptions
+            {
+                TierStorageMode = TierStorageMode.IntelligentTiering
+            }, null);
+
+            XElement key = XElement.Parse(keyText);
+            repository.StoreElement(key, null);
+        }
+
         private string GenerateKeyOfLength(int length)
         {
             var start = "<key id=\"foo\">";
