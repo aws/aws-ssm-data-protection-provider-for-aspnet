@@ -1,3 +1,9 @@
+### Release 2023-11-14
+* **Amazon.AspNetCore.DataProtection.SSM (3.2.0)**
+  * Add .NET 8 target
+  * Added support of Intelligent-Tiering parameter tier
+  * Pull request [#60](https://github.com/aws/aws-ssm-data-protection-provider-for-aspnet/pull/60) Fixed logging paramter casing for structured logging support. Thanks [Martin Costello](https://github.com/martincostello)
+
 ### Release 2023-02-03
 * **Amazon.AspNetCore.DataProtection.SSM (3.1.1)**
   * Update dependency of Microsoft.AspNetCore.DataProtection.Extensions to use the version that comes with the .NET runtime instead of bring in a specific version.
