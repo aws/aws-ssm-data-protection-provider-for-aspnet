@@ -72,7 +72,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM
             // make sure _parameterNamePrefix is bookended with '/' characters
             _parameterNamePrefix = '/' + _parameterNamePrefix.Trim('/') + '/';
 
-            _logger.LogInformation($"Using SSM Parameter Store to persist DataProtection keys with parameter name prefix {_parameterNamePrefix}");
+            _logger.LogInformation("Using SSM Parameter Store to persist DataProtection keys with parameter name prefix {ParameterNamePrefix}", _parameterNamePrefix);
         }
 
 
@@ -106,7 +106,12 @@ namespace Amazon.AspNetCore.DataProtection.SSM
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, $"Error calling SSM to get parameters starting with {_parameterNamePrefix}: {e.Message}");
+                    _logger.LogError(
+                        e,
+                        "Error calling SSM to get parameters starting with {ParameterNamePrefix}: {ExceptionMessage}",
+                        _parameterNamePrefix,
+                        e.Message);
+
                     throw;
                 }
 
@@ -121,13 +126,13 @@ namespace Amazon.AspNetCore.DataProtection.SSM
                     catch (Exception e)
 #pragma warning restore CA1031 // Do not catch general exception types
                     {
-                        _logger.LogError(e, $"Error parsing key {parameter.Name}, key will be skipped: {e.Message}");
+                        _logger.LogError(e, "Error parsing key {ParameterName}, key will be skipped: {ExceptionMessage}", parameter.Name, e.Message);
                     }
                 }
 
             } while (!string.IsNullOrEmpty(response.NextToken));
 
-            _logger.LogInformation($"Loaded {results.Count} DataProtection keys");
+            _logger.LogInformation("Loaded {Count} DataProtection keys", results.Count);
             return results;
         }
 
@@ -150,7 +155,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM
 
             var elementValue = element.ToString();
             var tier = GetParameterTier(elementValue);
-            _logger.LogInformation($"Using SSM parameter tier {tier} for DataProtection element {parameterName}");
+            _logger.LogInformation("Using SSM parameter tier {Tier} for DataProtection element {ParameterName}", tier, parameterName);
             
             try
             {
@@ -177,11 +182,11 @@ namespace Amazon.AspNetCore.DataProtection.SSM
 
                 await _ssmClient.PutParameterAsync(request).ConfigureAwait(false);
 
-                _logger.LogInformation($"Saved DataProtection key to SSM Parameter Store with parameter name {parameterName}");
+                _logger.LogInformation("Saved DataProtection key to SSM Parameter Store with parameter name {ParameterName}", parameterName);
             }
             catch (Exception e)
             {
-                _logger.LogError(e, $"Error saving DataProtection key to SSM Parameter Store with parameter name {parameterName}: {e.Message}");
+                _logger.LogError(e, "Error saving DataProtection key to SSM Parameter Store with parameter name {ParameterName}: {ExceptionMessage}", parameterName, e.Message);
                 throw;
             }
         }
@@ -194,7 +199,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM
             var elementValueLength = elementValue.Length;
             var storageMode = _options.TierStorageMode;
 
-            _logger.LogDebug($"Using tier storage mode {storageMode} to decide which SSM parameter tier to use for DataProtection element.");
+            _logger.LogDebug("Using tier storage mode {StorageMode} to decide which SSM parameter tier to use for DataProtection element.", storageMode);
 
             // Check if the value is too large for the advanced tier (8192 characters/ 8KB), in this case the key generation is not suitable for keys that should be stored as SSM parameter.
             const int advancedTierMaxSize = 8192;
@@ -214,7 +219,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM
             const int standardTierMaxSize = 4096;
             if (elementValueLength > standardTierMaxSize)
             {
-                _logger.LogDebug($"DataProtection element has a length of {elementValueLength} which exceeds the maximum standard tier SSM parameter size of {standardTierMaxSize} (4KB), checking if advanced tier usage is allowed.");
+                _logger.LogDebug("DataProtection element has a length of {Length} which exceeds the maximum standard tier SSM parameter size of {StandardTierMaxSize} (4KB), checking if advanced tier usage is allowed.", elementValueLength, standardTierMaxSize);
 
                 // tier is too large for standard tier, check if advanced tier is allowed
                 if (_options == null || _options.TierStorageMode == TierStorageMode.StandardOnly)
