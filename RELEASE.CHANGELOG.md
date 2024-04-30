@@ -1,3 +1,7 @@
+### Release 2024-04-20
+* **Amazon.AspNetCore.DataProtection.SSM (3.2.1)**
+  * Update User-Agent string
+
 ### Release 2023-11-14
 * **Amazon.AspNetCore.DataProtection.SSM (3.2.0)**
   * Add .NET 8 target
