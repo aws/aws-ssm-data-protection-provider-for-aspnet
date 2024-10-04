@@ -20,7 +20,7 @@
     <Company>Amazon Web Services</Company>
     <SignAssembly>true</SignAssembly>
     <SignOnBuild>true</SignOnBuild>
-    <Version>3.2.1</Version>
+    <Version>4.0.0-preview.1</Version>
 	<WarningsAsErrors>CA1727</WarningsAsErrors>
   </PropertyGroup>
 
@@ -34,8 +34,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.300" />
-    <PackageReference Include="AWSSDK.SimpleSystemsManagement" Version="3.7.303.23" />
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.0-preview.3" />
+    <PackageReference Include="AWSSDK.SimpleSystemsManagement" Version="4.0.0-preview.3" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
