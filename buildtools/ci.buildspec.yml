@@ -1,0 +1,15 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      dotnet: 8.x
+  build:
+    commands:
+      - dotnet test test/Amazon.AspNetCore.DataProtection.SSM.Tests/Amazon.AspNetCore.DataProtection.SSM.Tests.csproj -c Release --logger trx --results-directory ./testresults
+reports:
+    aws-ssm-data-protection-provider-for-aspnet-tests:
+        file-format: VisualStudioTrx
+        files:
+            - '**/*'
+        base-directory: './testresults'
