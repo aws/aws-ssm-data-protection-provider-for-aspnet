@@ -1,0 +1,11 @@
+{
+  "Projects": [
+    {
+      "Name": "Amazon.AspNetCore.DataProtection.SSM",
+      "Path": "src/Amazon.AspNetCore.DataProtection.SSM/Amazon.AspNetCore.DataProtection.SSM.csproj"
+    }
+  ],
+  "UseCommitsForChangelog": false,
+  "DefaultIncrementType": "Patch",
+  "ChangeFilesDetermineIncrementType": true
+}
