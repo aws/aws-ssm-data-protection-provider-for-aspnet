@@ -1,7 +1,7 @@
 # This GitHub Workflow is designed to run automatically after the Release PR, which was created by the `Create Release PR` workflow, is closed.
 # This workflow has 2 jobs. One will run if the `Release PR` is successfully merged, indicating that a release should go out.
 # The other will run if the `Release PR` was closed and a release is not intended to go out.
-name: Sync 'dev' and 'release'
+name: Sync 'dev' and 'master'
 
 # The workflow will automatically be triggered when any PR is closed.
 on:
