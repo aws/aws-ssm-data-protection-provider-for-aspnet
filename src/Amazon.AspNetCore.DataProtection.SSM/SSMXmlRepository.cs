@@ -35,7 +35,8 @@ namespace Amazon.AspNetCore.DataProtection.SSM
     internal class SSMXmlRepository : IXmlRepository, IDisposable
     {
         const string UserAgentHeader = "User-Agent";
-        static readonly string _assemblyVersion = typeof(SSMXmlRepository).GetTypeInfo().Assembly.GetName().Version.ToString();
+        private static readonly string _assemblyVersion = typeof(SSMXmlRepository).GetTypeInfo().Assembly.GetName().Version.ToString();
+        private static readonly string _userAgentSuffix = $"lib/SSMDataProtectionProvider#{_assemblyVersion}";
 
         private readonly IAmazonSimpleSystemsManagement _ssmClient;
         private readonly string _parameterNamePrefix;
@@ -268,10 +269,10 @@ namespace Amazon.AspNetCore.DataProtection.SSM
                 amazonSimpleSystemsManagementClient.BeforeRequestEvent += (object sender, RequestEventArgs e) =>
                 {
                     var args = e as WebServiceRequestEventArgs;
-                    if (args == null || !args.Headers.ContainsKey(UserAgentHeader))
+                    if (args == null || !args.Headers.ContainsKey(UserAgentHeader) || args.Headers[UserAgentHeader].Contains(_userAgentSuffix))
                         return;
 
-                    args.Headers[UserAgentHeader] = args.Headers[UserAgentHeader] + " SSMDataProtectionProvider/" + _assemblyVersion;
+                    args.Headers[UserAgentHeader] = args.Headers[UserAgentHeader] + " " + _userAgentSuffix;
                 };
             }
         }
