@@ -116,6 +116,11 @@ namespace Amazon.AspNetCore.DataProtection.SSM
                     throw;
                 }
 
+                if (response.Parameters is null)
+                {
+                    continue;
+                }
+
                 foreach (var parameter in response.Parameters)
                 {
                     try
