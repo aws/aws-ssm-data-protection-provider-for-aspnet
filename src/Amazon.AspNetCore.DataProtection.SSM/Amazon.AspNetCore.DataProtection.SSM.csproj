@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1;net6.0;net7.0;net8.0</TargetFrameworks>
@@ -20,7 +20,7 @@
     <Company>Amazon Web Services</Company>
     <SignAssembly>true</SignAssembly>
     <SignOnBuild>true</SignOnBuild>
-    <Version>3.2.1</Version>
+    <Version>4.0.0-preview.1</Version>
 	<WarningsAsErrors>CA1727</WarningsAsErrors>
   </PropertyGroup>
 
