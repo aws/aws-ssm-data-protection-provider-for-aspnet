@@ -1,3 +1,8 @@
+## Release 2024-10-09
+
+### Amazon.AspNetCore.DataProtection.SSM (4.0.0-preview.1)
+* Updated the .NET SDK dependencies to the latest version 4.0.0-preview.3
+
 ## Release 2024-04-20
 
 ### Amazon.AspNetCore.DataProtection.SSM (3.2.1)
