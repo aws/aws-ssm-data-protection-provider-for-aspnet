@@ -1,0 +1,12 @@
+{
+	"Projects": [
+    {
+      "Name": "Amazon.AspNetCore.DataProtection.SSM",
+      "Type": "Patch",
+      "ChangelogMessages": [
+        "Mark the assembly trimmable",
+        "Enable Source Link"
+      ]
+    }
+  ]	
+}
