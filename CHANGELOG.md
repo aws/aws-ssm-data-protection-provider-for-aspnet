@@ -1,3 +1,9 @@
+## Release 2024-10-24
+
+### Amazon.AspNetCore.DataProtection.SSM (4.0.0-preview.2)
+* Mark the assembly trimmable
+* Enable Source Link
+
 ## Release 2024-10-09
 
 ### Amazon.AspNetCore.DataProtection.SSM (4.0.0-preview.1)
