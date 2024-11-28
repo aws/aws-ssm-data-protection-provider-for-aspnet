@@ -1,0 +1,11 @@
+{
+  "Projects": [
+    {
+      "Name": "Amazon.AspNetCore.DataProtection.SSM",
+      "Type": "Patch",
+      "ChangelogMessages": [
+        "Update .NET target to use version 8.0.11 of Microsoft.AspNetCore.DataProtection"
+      ]
+    }
+  ]
+}
