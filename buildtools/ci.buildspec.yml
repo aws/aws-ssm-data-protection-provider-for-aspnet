@@ -4,6 +4,10 @@ phases:
   install:
     runtime-versions:
       dotnet: 8.x
+    commands:
+      # Find and delete the global.json files that were added by CodeBuild. This causes issues when multiple SDKs are installed.
+      - find / -type f -name 'global.json' -delete
+      - curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 9.0
   build:
     commands:
       - dotnet test test/Amazon.AspNetCore.DataProtection.SSM.Tests/Amazon.AspNetCore.DataProtection.SSM.Tests.csproj -c Release --logger trx --results-directory ./testresults
