@@ -24,6 +24,7 @@ using Moq;
 
 using Amazon.SimpleSystemsManagement;
 using Amazon.SimpleSystemsManagement.Model;
+using System.Collections.Generic;
 
 namespace Amazon.AspNetCore.DataProtection.SSM.Tests
 {
@@ -57,8 +58,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
 
                     Assert.Null(request.KeyId);
 
-                    Assert.NotNull(request.Tags);
-                    Assert.Empty(request.Tags);
+                    Assert.Null(request.Tags);
                 })
                 .Returns((PutParameterRequest r, CancellationToken token) =>
                 {
@@ -131,6 +131,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
                 .Returns((GetParametersByPathRequest r, CancellationToken token) =>
                 {
                     var response = new GetParametersByPathResponse();
+                    response.Parameters = new List<Parameter>();
                     response.Parameters.Add(new Parameter
                     {
                         Name = prefix + "foo",
@@ -173,6 +174,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
                 .Returns((GetParametersByPathRequest r, CancellationToken token) =>
                 {
                     var response = new GetParametersByPathResponse();
+                    response.Parameters = new List<Parameter>();
                     response.Parameters.Add(new Parameter
                     {
                         Name = prefix + "foo",
@@ -191,7 +193,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
             var repository = new SSMXmlRepository(_mockSSM.Object, prefix, null, null);
 
             var elements = repository.GetAllElements();
-            Assert.Equal(1, elements.Count);
+            Assert.Single(elements);
             Assert.NotNull(elements.FirstOrDefault(x => string.Equals(x.Attribute("id").Value, "foo")));
         }
 
@@ -219,6 +221,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
                 .Returns((GetParametersByPathRequest r, CancellationToken token) =>
                 {
                     var response = new GetParametersByPathResponse();
+                    response.Parameters = new List<Parameter>();
                     if (callCount == 0)
                     {
                         response.Parameters.Add(new Parameter
