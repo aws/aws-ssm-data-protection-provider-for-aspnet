@@ -1,3 +1,9 @@
+## Release 2024-12-10
+
+### Amazon.AspNetCore.DataProtection.SSM (4.0.0-preview.3)
+* Update Microsoft.AspNetCore.DataProtection dependency to address transitive dependencies vulnerabilities
+* Replace .NET targets less then .NET 8 with a .NET Standard 2.0 target
+
 ## Release 2024-10-24
 
 ### Amazon.AspNetCore.DataProtection.SSM (4.0.0-preview.2)
