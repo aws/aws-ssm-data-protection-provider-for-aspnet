@@ -20,7 +20,7 @@
     <Company>Amazon Web Services</Company>
     <SignAssembly>true</SignAssembly>
     <SignOnBuild>true</SignOnBuild>
-    <Version>3.3.0</Version>
+    <Version>3.4.0</Version>
 	<WarningsAsErrors>CA1727</WarningsAsErrors>
   </PropertyGroup>
 
