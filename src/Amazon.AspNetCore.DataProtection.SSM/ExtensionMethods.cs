@@ -12,19 +12,14 @@ Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
   express or implied. See the License for the specific language governing
   permissions and limitations under the License.
  */
-using Microsoft.AspNetCore.DataProtection.KeyManagement;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.AspNetCore.DataProtection;
-
 using Amazon.AspNetCore.DataProtection.SSM;
 using Amazon.SimpleSystemsManagement;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using System;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -77,6 +72,10 @@ namespace Microsoft.Extensions.DependencyInjection
                     options.XmlRepository = new SSMXmlRepository(ssmClient, parameterNamePrefix, ssmOptions, loggerFactory);
                 });
             });
+
+#if NET9_0_OR_GREATER
+            builder.Services.AddSingleton<IKeyManager, XmlDeletableKeyManager>();
+#endif
 
             return builder;
         }

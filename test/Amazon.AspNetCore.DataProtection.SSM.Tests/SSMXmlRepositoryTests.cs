@@ -24,6 +24,7 @@ using Moq;
 
 using Amazon.SimpleSystemsManagement;
 using Amazon.SimpleSystemsManagement.Model;
+using System.Collections.Generic;
 
 namespace Amazon.AspNetCore.DataProtection.SSM.Tests
 {
@@ -191,7 +192,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
             var repository = new SSMXmlRepository(_mockSSM.Object, prefix, null, null);
 
             var elements = repository.GetAllElements();
-            Assert.Equal(1, elements.Count);
+            Assert.Single(elements);
             Assert.NotNull(elements.FirstOrDefault(x => string.Equals(x.Attribute("id").Value, "foo")));
         }
 
@@ -630,6 +631,203 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
             XElement key = XElement.Parse(keyText);
             repository.StoreElement(key, null);
         }
+
+#if NET9_0_OR_GREATER
+        [Fact]
+        public void DeleteAllElementsTest()
+        {
+            var prefix = "/" + BasePrefix + "/";
+            var parameters = new List<Parameter>();
+            var friendlyNameKeyMap = new Dictionary<string, string>
+            {
+                { "bar1", "<key id=\"foo1\"></key>" },
+                { "bar2", "<key id=\"foo2\"></key>" }
+            };
+
+            _mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
+                .Callback<PutParameterRequest, CancellationToken>((request, token) =>
+                {
+                    Assert.NotNull(request.Name);
+                    Assert.StartsWith(prefix, request.Name);
+
+                    Assert.NotNull(request.Description);
+
+                    Assert.NotNull(request.Value);
+                    XElement parsed = XElement.Parse(request.Value);
+                    Assert.NotNull(parsed);
+
+                    Assert.Null(request.KeyId);
+
+                    Assert.True(request.Tags == null || request.Tags.Count == 0);
+
+                    parameters.Add(new Parameter
+                    {
+                        Name = request.Name,
+                        Type = ParameterType.SecureString,
+                        Value = request.Value
+                    });
+                })
+                .Returns((PutParameterRequest r, CancellationToken token) =>
+                {
+                    return Task.FromResult(new PutParameterResponse());
+                });
+
+            _mockSSM.Setup(client => client.GetParametersByPathAsync(It.IsAny<GetParametersByPathRequest>(), It.IsAny<CancellationToken>()))
+                .Callback<GetParametersByPathRequest, CancellationToken>((request, token) =>
+                {
+                    Assert.NotNull(request.Path);
+                    Assert.Equal(prefix, request.Path);
+
+                    Assert.True(request.WithDecryption);
+
+                })
+                .Returns((GetParametersByPathRequest r, CancellationToken token) =>
+                {
+                    var response = new GetParametersByPathResponse();
+                    response.Parameters = parameters;
+
+                    return Task.FromResult(response);
+                });
+
+            _mockSSM.Setup(client => client.DeleteParameterAsync(It.IsAny<DeleteParameterRequest>(), It.IsAny<CancellationToken>()))
+                .Callback<DeleteParameterRequest, CancellationToken>((request, token) =>
+                {
+                    Assert.NotNull(request.Name);
+                    Assert.StartsWith(prefix, request.Name);
+                })
+                .Returns((DeleteParameterRequest r, CancellationToken token) =>
+                {
+                    var parameterToBeRemoved = parameters.First(p => p.Name == r.Name);
+                    parameters.Remove(parameterToBeRemoved);
+                    var response = new DeleteParameterResponse();
+                    
+                    return Task.FromResult(response);
+                });
+
+            var repository = new SSMXmlRepository(_mockSSM.Object, prefix, null, null);
+
+            foreach (var keyValuePair in friendlyNameKeyMap)
+            {
+                XElement key = XElement.Parse(keyValuePair.Value);
+                repository.StoreElement(key, keyValuePair.Key);
+            }
+
+            var elements = repository.GetAllElements();
+            Assert.Equal(2, elements.Count);
+
+            var deleted = repository.DeleteElements((parameterCollection) =>
+            {
+                int deletionOrder = 0;
+                foreach (var parameter in parameterCollection)
+                {
+                    parameter.DeletionOrder = deletionOrder;
+                    deletionOrder++;
+                }    
+            });
+
+            Assert.True(deleted);
+            Assert.Empty(parameters);
+        }
+
+        [Fact]
+        public void DeleteExceptionTest()
+        {
+            var prefix = "/" + BasePrefix + "/";
+            var parameters = new List<Parameter>();
+            var friendlyNameKeyMap = new Dictionary<string, string>
+            {
+                { "bar1", "<key id=\"foo1\"></key>" },
+                { "bar_locked", "<key id=\"foo_locked\"></key>" },
+                { "bar2", "<key id=\"foo2\"></key>" }
+            };
+
+            _mockSSM.Setup(client => client.PutParameterAsync(It.IsAny<PutParameterRequest>(), It.IsAny<CancellationToken>()))
+                .Callback<PutParameterRequest, CancellationToken>((request, token) =>
+                {
+                    Assert.NotNull(request.Name);
+                    Assert.StartsWith(prefix, request.Name);
+
+                    Assert.NotNull(request.Description);
+
+                    Assert.NotNull(request.Value);
+                    XElement parsed = XElement.Parse(request.Value);
+                    Assert.NotNull(parsed);
+
+                    Assert.Null(request.KeyId);
+
+                    Assert.True(request.Tags == null || request.Tags.Count == 0);
+
+                    parameters.Add(new Parameter
+                    {
+                        Name = request.Name,
+                        Type = ParameterType.SecureString,
+                        Value = request.Value
+                    });
+                })
+                .Returns((PutParameterRequest r, CancellationToken token) =>
+                {
+                    return Task.FromResult(new PutParameterResponse());
+                });
+
+            _mockSSM.Setup(client => client.GetParametersByPathAsync(It.IsAny<GetParametersByPathRequest>(), It.IsAny<CancellationToken>()))
+                .Callback<GetParametersByPathRequest, CancellationToken>((request, token) =>
+                {
+                    Assert.NotNull(request.Path);
+                    Assert.Equal(prefix, request.Path);
+
+                    Assert.True(request.WithDecryption);
+
+                })
+                .Returns((GetParametersByPathRequest r, CancellationToken token) =>
+                {
+                    var response = new GetParametersByPathResponse();
+                    response.Parameters = parameters;
+
+                    return Task.FromResult(response);
+                });
+
+            _mockSSM.Setup(client => client.DeleteParameterAsync(It.IsAny<DeleteParameterRequest>(), It.IsAny<CancellationToken>()))
+                .Callback<DeleteParameterRequest, CancellationToken>((request, token) =>
+                {
+                    Assert.NotNull(request.Name);
+                    Assert.StartsWith(prefix, request.Name);
+                })
+                .Returns((DeleteParameterRequest r, CancellationToken token) =>
+                {
+                    if (r.Name.EndsWith("bar_locked")) throw new InvalidOperationException($"Cannot delete locked parameter {r.Name}");
+
+                    var parameterToBeRemoved = parameters.First(p => p.Name == r.Name);
+                    parameters.Remove(parameterToBeRemoved);
+                    var response = new DeleteParameterResponse();
+                    
+                    return Task.FromResult(response);
+                });
+
+            var repository = new SSMXmlRepository(_mockSSM.Object, prefix, null, null);
+
+            foreach (var keyValuePair in friendlyNameKeyMap)
+            {
+                XElement key = XElement.Parse(keyValuePair.Value);
+                repository.StoreElement(key, keyValuePair.Key);
+            }
+
+            var elements = repository.GetAllElements();
+            Assert.Equal(3, elements.Count);
+
+            var deleted = repository.DeleteElements((parameterCollection) =>
+            {
+                int deletionOrder = 0;
+                foreach (var parameter in parameterCollection)
+                {
+                    parameter.DeletionOrder = deletionOrder;
+                    deletionOrder++;
+                }    
+            });
+
+            Assert.False(deleted);
+            Assert.Equal(2, parameters.Count);
+        }
+#endif
 
         private string GenerateKeyOfLength(int length)
         {
