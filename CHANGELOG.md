@@ -1,3 +1,8 @@
+## Release 2025-02-12
+
+### Amazon.AspNetCore.DataProtection.SSM (3.5.0)
+* Updated SSMXmlRepository to implement IDeletableXmlRepository for .NET 9 target.
+
 ## Release 2024-12-16
 
 ### Amazon.AspNetCore.DataProtection.SSM (3.4.0)
