@@ -26,7 +26,9 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>	  
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    
+	  <WarningsAsErrors>CA1727</WarningsAsErrors>
   </PropertyGroup>
 	
   <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
@@ -51,7 +53,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />	  
   </ItemGroup>
-
+  
   <ItemGroup Condition="'$(TargetFramework)' == 'net9.0' or '$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="9.0.0" />
   </ItemGroup>
@@ -59,5 +61,6 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
     <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="8.0.11" />
   </ItemGroup>
+  
 
 </Project>
