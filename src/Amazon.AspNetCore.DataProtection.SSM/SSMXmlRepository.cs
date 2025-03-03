@@ -249,7 +249,7 @@ namespace Amazon.AspNetCore.DataProtection.SSM
                     throw;
                 }
 
-                foreach (var parameter in response.Parameters)
+                foreach (var parameter in response.Parameters ?? new())
                 {
                     try
                     {
