@@ -1,6 +1,24 @@
+## Release 2025-02-12
+
+### Amazon.AspNetCore.DataProtection.SSM (3.5.0)
+* Updated SSMXmlRepository to implement IDeletableXmlRepository for .NET 9 target.
+
+## Release 2024-12-16
+
+### Amazon.AspNetCore.DataProtection.SSM (3.4.0)
+* Update .NET target to use version 8.0.11 of Microsoft.AspNetCore.DataProtection
+* Update Microsoft.AspNetCore.DataProtection dependency to address transitive dependencies vulnerabilities
+* Replace .NET targets less then .NET 8 with a .NET Standard 2.0 target
+
 ## Release 2024-12-10
 
 ### Amazon.AspNetCore.DataProtection.SSM (4.0.0-preview.3)
+* Update Microsoft.AspNetCore.DataProtection dependency to address transitive dependencies vulnerabilities
+* Replace .NET targets less then .NET 8 with a .NET Standard 2.0 target
+
+## Release 2024-11-27
+
+### Amazon.AspNetCore.DataProtection.SSM (3.3.0)
 * Update Microsoft.AspNetCore.DataProtection dependency to address transitive dependencies vulnerabilities
 * Replace .NET targets less then .NET 8 with a .NET Standard 2.0 target
 

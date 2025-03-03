@@ -25,6 +25,46 @@ public void ConfigureServices(IServiceCollection services)
     services.AddMvc();
 }
 ```
+For .NET 9 or later targets, the `SSMXmlRepository` that this package uses, has been updated to use `IDeletableXmlRepository` (an extension of `IXmlRepository`) from `Microsoft.AspNetCore.DataProtection.Repositories` namespace. `IDeletableXmlRepository` supports deletion of elements. While it is recommended not deleting data protection keys, in exceptional cases, such as extremely long-running services, applications might need to delete keys that are no longer in use and accepts the risk of data loss in exchange for storage savings. Below example demonstrates possible approach on how to delete keys that have expired within certain time frame.
+```csharp
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddControllersWithViews();
+
+builder.Services.AddDataProtection()
+    .PersistKeysToAWSSystemsManager("/MyApplication/DataProtection");
+
+var app = builder.Build();
+
+var keyManager = app.Services.GetService<IKeyManager>();
+
+if (keyManager is IDeletableKeyManager deletableKeyManager)
+{
+    var utcNow = DateTimeOffset.UtcNow;
+    var yearAgo = utcNow.AddYears(-1);
+
+    if (!deletableKeyManager.DeleteKeys(key => key.ExpirationDate < yearAgo))
+    {
+        Console.WriteLine("Failed to delete keys.");
+    }
+    else
+    {
+        Console.WriteLine("Old keys deleted successfully.");
+    }
+}
+else
+{
+    Console.WriteLine("Key manager does not support deletion.");
+}
+...
+```
+
+
+
 ## Getting Help
 
 Please use these community resources for getting help. We use the GitHub issues
@@ -60,6 +100,7 @@ for those actions.
 If the `KMSKeyId` property is set during the `PersistKeysToAWSSystemsManager` method then the IAM Policy
 will also need access to **kms:Encrypt** for the KMS key used.
 
+For .NET 9 or later targets, the `SSMXmlRepository` that this package uses has been updated to use `IDeletableXmlRepository`. If application opts to delete keys, then AWS credentials used must have access to the **ssm:DeleteParameter** service operation.
 
 
 ## Contributing

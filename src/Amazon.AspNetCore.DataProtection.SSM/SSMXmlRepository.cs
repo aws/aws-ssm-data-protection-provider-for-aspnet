@@ -26,13 +26,25 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Amazon.Runtime;
 using Amazon.SimpleSystemsManagement;
 using Amazon.SimpleSystemsManagement.Model;
+using System.IO;
+using System.Diagnostics;
 
 namespace Amazon.AspNetCore.DataProtection.SSM
 {
+#if NET9_0_OR_GREATER
+    /// <summary>
+    /// Implementation of IDeletableXmlRepository that handles storing, retrieving and deleting DataProtection keys from the SSM Parameter Store. 
+    /// </summary>
+    internal class SSMXmlRepository :
+        IDeletableXmlRepository
+#else
     /// <summary>
     /// Implementation of IXmlRepository that handles storing and retrieving DataProtection keys from the SSM Parameter Store. 
     /// </summary>
-    internal class SSMXmlRepository : IXmlRepository, IDisposable
+    internal class SSMXmlRepository :
+        IXmlRepository
+#endif
+        , IDisposable
     {
         const string UserAgentHeader = "User-Agent";
         private static readonly string _assemblyVersion = typeof(SSMXmlRepository).GetTypeInfo().Assembly.GetName().Version.ToString();
@@ -197,6 +209,96 @@ namespace Amazon.AspNetCore.DataProtection.SSM
             }
         }
 
+#if NET9_0_OR_GREATER
+        /// <inheritdoc/>
+        public bool DeleteElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements)
+        {
+            return Task.Run(() => DeleteElementsAsync(chooseElements)).GetAwaiter().GetResult();
+        }
+
+        private async Task<bool> DeleteElementsAsync(Action<IReadOnlyCollection<IDeletableElement>> chooseElements)
+        {
+            if (chooseElements == null)
+            {
+                throw new ArgumentNullException(nameof(chooseElements));
+            }
+
+            var deletableElements = new List<DeletableElement>();
+            var request = new GetParametersByPathRequest
+            {
+                Path = _parameterNamePrefix,
+                WithDecryption = true
+            };
+            GetParametersByPathResponse response = null;
+
+            do
+            {
+                request.NextToken = response?.NextToken;
+                try
+                {
+                    response = await _ssmClient.GetParametersByPathAsync(request).ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(
+                        e,
+                        "Error calling SSM to get parameters starting with {ParameterNamePrefix}: {ExceptionMessage}",
+                        _parameterNamePrefix,
+                        e.Message);
+
+                    throw;
+                }
+
+                foreach (var parameter in response.Parameters ?? new())
+                {
+                    try
+                    {
+                        var xml = XElement.Parse(parameter.Value);
+                        deletableElements.Add(new DeletableElement(parameter, xml));
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types
+                    catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
+                    {
+                        _logger.LogError(e, "Error parsing key {ParameterName}, key will be skipped: {ExceptionMessage}", parameter.Name, e.Message);
+                    }
+                }
+
+            } while (!string.IsNullOrEmpty(response.NextToken));
+
+            chooseElements(deletableElements);
+
+            var elementsToDelete = deletableElements
+                .Where(e => e.DeletionOrder.HasValue)
+                .OrderBy(e => e.DeletionOrder.GetValueOrDefault());
+
+            foreach (var deletableElement in elementsToDelete)
+            {
+                var parameter = deletableElement.Parameter;
+
+                _logger.LogDebug("Deleting DataProtection key from SSM Parameter Store with parameter name {ParameterName}", parameter.Name);
+                try
+                {
+                    var deleteParameterRequest = new DeleteParameterRequest
+                    {
+                        Name = parameter.Name
+                    };
+
+                    await _ssmClient.DeleteParameterAsync(deleteParameterRequest).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to delete DataProtection key from SSM Parameter Store with parameter name {ParameterName}: {ExceptionMessage}", parameter.Name, ex.Message);
+
+                    // Stop processing deletions to avoid deleting a revocation entry for a key that we failed to delete.
+                    return false;
+                }
+            }
+
+            return true;
+        }
+#endif
+
         /// <summary>
         /// Gets the <see cref="ParameterTier"/> to use for the <paramref name="elementValue"/> based on the <paramref name="elementValue"/> length and configured <see cref="TierStorageMode"/>. 
         /// </summary>
@@ -281,5 +383,25 @@ namespace Amazon.AspNetCore.DataProtection.SSM
                 };
             }
         }
+
+#if NET9_0_OR_GREATER
+        private sealed class DeletableElement : IDeletableElement
+        {
+            public DeletableElement(Parameter parameter, XElement element)
+            {
+                Parameter = parameter;
+                Element = element;
+            }
+
+            /// <summary>The Parameter from which <see cref="Element"/> was read.</summary>
+            public Parameter Parameter { get; }
+
+            /// <inheritdoc/>
+            public XElement Element { get; }
+
+            /// <inheritdoc/>
+            public int? DeletionOrder { get; set; }
+        }
+#endif
     }
 }

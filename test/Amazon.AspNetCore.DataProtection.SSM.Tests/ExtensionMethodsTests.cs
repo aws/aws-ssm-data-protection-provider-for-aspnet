@@ -27,6 +27,7 @@ using System.Xml.Linq;
 using Amazon.SimpleSystemsManagement.Model;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 
 namespace Amazon.AspNetCore.DataProtection.SSM.Tests
 {
@@ -63,6 +64,23 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
 
             AssertDataProtectUnprotect(serviceContainer.BuildServiceProvider());
         }
+
+#if NET9_0_OR_GREATER
+        [Fact]
+        public void CheckXmlDeletableKeyManager()
+        {
+            var serviceContainer = new ServiceCollection();
+
+            serviceContainer.AddDataProtection()
+                .PersistKeysToAWSSystemsManager("/MyApplication/DataProtection");
+
+            var serviceProvider = serviceContainer.BuildServiceProvider();
+            var keyManager = serviceProvider.GetService<IKeyManager>();
+
+            Assert.True(keyManager is IDeletableKeyManager);
+            Assert.True((keyManager as IDeletableKeyManager).CanDeleteKeys);
+        }
+#endif
 
         private IAmazonSimpleSystemsManagement CreateMockSSMClient(string kmsKeyId)
         {
