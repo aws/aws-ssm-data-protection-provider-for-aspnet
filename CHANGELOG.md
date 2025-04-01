@@ -1,3 +1,8 @@
+## Release 2025-04-01
+
+### Amazon.AspNetCore.DataProtection.SSM (4.0.0-preview.5)
+* Update AWS SDK to Preview 11
+
 ## Release 2025-03-04
 
 ### Amazon.AspNetCore.DataProtection.SSM (4.0.0-preview.4)
