@@ -1,3 +1,8 @@
+## Release 2025-04-28
+
+### Amazon.AspNetCore.DataProtection.SSM (4.0.0)
+* Updating the .NET SDK dependencies to the latest version GA 4.0.0
+
 ## Release 2025-04-01
 
 ### Amazon.AspNetCore.DataProtection.SSM (4.0.0-preview.5)
