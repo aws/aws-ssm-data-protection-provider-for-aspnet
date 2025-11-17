@@ -31,7 +31,7 @@
 	  <WarningsAsErrors>CA1727</WarningsAsErrors>
   </PropertyGroup>
 	
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
+  <PropertyGroup Condition="'$(TargetFramework)' != 'netstandard2.0'">
     <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>	
 
@@ -45,8 +45,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.0" />
-    <PackageReference Include="AWSSDK.SimpleSystemsManagement" Version="4.0.0" />
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.11" />
+    <PackageReference Include="AWSSDK.SimpleSystemsManagement" Version="4.0.6.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
