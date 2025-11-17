@@ -46,7 +46,6 @@ namespace Amazon.AspNetCore.DataProtection.SSM
 #endif
         , IDisposable
     {
-        const string UserAgentHeader = "User-Agent";
         private static readonly string _assemblyVersion = typeof(SSMXmlRepository).GetTypeInfo().Assembly.GetName().Version.ToString();
         private static readonly string _userAgentSuffix = $"lib/SSMDataProtectionProvider#{_assemblyVersion}";
 
@@ -376,10 +375,10 @@ namespace Amazon.AspNetCore.DataProtection.SSM
                 amazonSimpleSystemsManagementClient.BeforeRequestEvent += (object sender, RequestEventArgs e) =>
                 {
                     var args = e as WebServiceRequestEventArgs;
-                    if (args == null || !args.Headers.ContainsKey(UserAgentHeader) || args.Headers[UserAgentHeader].Contains(_userAgentSuffix))
-                        return;
-
-                    args.Headers[UserAgentHeader] = args.Headers[UserAgentHeader] + " " + _userAgentSuffix;
+                    if (args != null && args.Request is Amazon.Runtime.Internal.IAmazonWebServiceRequest internalRequest && !internalRequest.UserAgentDetails.GetCustomUserAgentComponents().Contains(_userAgentSuffix))
+                    {
+                        internalRequest.UserAgentDetails.AddUserAgentComponent(_userAgentSuffix);
+                    }
                 };
             }
         }
