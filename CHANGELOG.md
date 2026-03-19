@@ -1,3 +1,8 @@
+## Release 2026-03-19
+
+### Amazon.AspNetCore.DataProtection.SSM (4.0.2)
+* Update AWS .NET SDK dependencies
+
 ## Release 2025-11-17
 
 ### Amazon.AspNetCore.DataProtection.SSM (4.0.1)
