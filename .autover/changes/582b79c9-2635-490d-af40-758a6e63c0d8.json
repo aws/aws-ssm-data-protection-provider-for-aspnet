@@ -1,0 +1,11 @@
+{
+  "Projects": [
+    {
+      "Name": "Amazon.AspNetCore.DataProtection.SSM",
+      "Type": "Patch",
+      "ChangelogMessages": [
+        "Add .NET 10 support and update DataProtection versions"
+      ]
+    }
+  ]
+}
