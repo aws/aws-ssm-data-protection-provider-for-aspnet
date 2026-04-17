@@ -1,3 +1,8 @@
+## Release 2026-04-17
+
+### Amazon.AspNetCore.DataProtection.SSM (4.0.3)
+* Add .NET 10 support and update DataProtection versions
+
 ## Release 2026-03-19
 
 ### Amazon.AspNetCore.DataProtection.SSM (4.0.2)
