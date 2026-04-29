@@ -1,0 +1,11 @@
+{
+  "Projects": [
+    {
+      "Name": "Amazon.AspNetCore.DataProtection.SSM",
+      "Type": "Minor",
+      "ChangelogMessages": [
+        "Added ProtectKeysWithAwsKms extension method to separate key encryption (KMS) from key persistence (SSM), following the same pattern as Azure's ProtectKeysWithAzureKeyVault"
+      ]
+    }
+  ]
+}

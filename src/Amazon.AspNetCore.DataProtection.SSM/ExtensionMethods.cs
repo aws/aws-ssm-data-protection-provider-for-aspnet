@@ -1,4 +1,4 @@
-﻿/*
+/*
 Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 
   Licensed under the Apache License, Version 2.0 (the "License").
@@ -13,9 +13,11 @@ Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
   permissions and limitations under the License.
  */
 using Amazon.AspNetCore.DataProtection.SSM;
+using Amazon.KeyManagementService;
 using Amazon.SimpleSystemsManagement;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.DataProtection.XmlEncryption;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -76,6 +78,57 @@ namespace Microsoft.Extensions.DependencyInjection
 #if NET9_0_OR_GREATER
             builder.Services.AddSingleton<IKeyManager, XmlDeletableKeyManager>();
 #endif
+
+            return builder;
+        }
+
+        /// <summary>
+        /// Configures the data protection system to protect keys with AWS KMS. This separates the encryption
+        /// concern from the persistence concern, allowing you to use any persistence provider (SSM, Redis, 
+        /// file system, etc.) while encrypting keys at rest with KMS.
+        /// <para>
+        /// When using this method with <see cref="PersistKeysToAWSSystemsManager(IDataProtectionBuilder, string)"/>, the SSM parameters will
+        /// be stored as encrypted XML (encrypted by the Data Protection framework using KMS) rather than relying
+        /// on SSM's SecureString parameter type.
+        /// </para>
+        /// </summary>
+        /// <param name="builder">The <see cref="IDataProtectionBuilder"/>.</param>
+        /// <param name="kmsKeyId">The KMS key ID, ARN, alias name, or alias ARN to use for encryption.</param>
+        /// <returns>The <see cref="IDataProtectionBuilder"/>.</returns>
+        /// <example>
+        /// <code>
+        /// // Use SSM for persistence and KMS for encryption (separated concerns)
+        /// services.AddDataProtection()
+        ///     .PersistKeysToAWSSystemsManager("/MyApp/DataProtection")
+        ///     .ProtectKeysWithAwsKms("arn:aws:kms:us-east-1:123456789012:key/my-key-id");
+        ///
+        /// // Use Redis for persistence and KMS for encryption
+        /// services.AddDataProtection()
+        ///     .PersistKeysToStackExchangeRedis(redis, "DataProtection-Keys")
+        ///     .ProtectKeysWithAwsKms("alias/my-data-protection-key");
+        /// </code>
+        /// </example>
+        public static IDataProtectionBuilder ProtectKeysWithAwsKms(this IDataProtectionBuilder builder, string kmsKeyId)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+            if (string.IsNullOrEmpty(kmsKeyId))
+            {
+                throw new ArgumentNullException(nameof(kmsKeyId));
+            }
+
+            builder.Services.TryAddAWSService<IAmazonKeyManagementService>();
+
+            builder.Services.AddSingleton<IXmlEncryptor>(services =>
+            {
+                var kmsClient = services.GetRequiredService<IAmazonKeyManagementService>();
+                var loggerFactory = services.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
+                return new KmsXmlEncryptor(kmsClient, kmsKeyId, loggerFactory);
+            });
+
+            builder.Services.AddSingleton<IXmlDecryptor, KmsXmlDecryptor>();
 
             return builder;
         }

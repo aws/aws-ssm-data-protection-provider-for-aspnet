@@ -20,9 +20,13 @@ using Xunit;
 
 using Moq;
 
+using Amazon.KeyManagementService;
+using Amazon.KeyManagementService.Model;
 using Amazon.SimpleSystemsManagement;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.XmlEncryption;
+using System.IO;
 using System.Xml.Linq;
 using Amazon.SimpleSystemsManagement.Model;
 using System.Threading;
@@ -81,6 +85,86 @@ namespace Amazon.AspNetCore.DataProtection.SSM.Tests
             Assert.True((keyManager as IDeletableKeyManager).CanDeleteKeys);
         }
 #endif
+
+        [Fact]
+        public void RegisterSSMProviderWithProtectKeysWithAwsKms()
+        {
+            var ssmClient = CreateMockSSMClient(null);
+            var kmsClient = CreateMockKmsClient();
+
+            var serviceContainer = new ServiceCollection()
+                    .AddSingleton<IAmazonSimpleSystemsManagement>(ssmClient)
+                    .AddSingleton<IAmazonKeyManagementService>(kmsClient);
+
+            serviceContainer.AddDataProtection()
+                .PersistKeysToAWSSystemsManager("/RegisterTest")
+                .ProtectKeysWithAwsKms("arn:aws:kms:us-east-1:123456789012:key/test-key");
+
+            var services = serviceContainer.BuildServiceProvider();
+
+            // Verify the encryptor and decryptor are registered
+            var encryptor = services.GetService<IXmlEncryptor>();
+            Assert.NotNull(encryptor);
+            Assert.IsType<KmsXmlEncryptor>(encryptor);
+
+            var decryptor = services.GetService<IXmlDecryptor>();
+            Assert.NotNull(decryptor);
+            Assert.IsType<KmsXmlDecryptor>(decryptor);
+
+            AssertDataProtectUnprotect(services);
+        }
+
+        [Fact]
+        public void ProtectKeysWithAwsKmsThrowsOnNullBuilder()
+        {
+            Assert.Throws<ArgumentNullException>(() =>
+                ExtensionMethods.ProtectKeysWithAwsKms(null, "key-id"));
+        }
+
+        [Fact]
+        public void ProtectKeysWithAwsKmsThrowsOnNullKeyId()
+        {
+            var serviceContainer = new ServiceCollection();
+            var builder = serviceContainer.AddDataProtection();
+
+            Assert.Throws<ArgumentNullException>(() =>
+                builder.ProtectKeysWithAwsKms(null));
+        }
+
+        private IAmazonKeyManagementService CreateMockKmsClient()
+        {
+            var mockKms = new Mock<IAmazonKeyManagementService>();
+
+            mockKms.Setup(client => client.EncryptAsync(It.IsAny<EncryptRequest>(), It.IsAny<CancellationToken>()))
+                .Returns((EncryptRequest request, CancellationToken token) =>
+                {
+                    // Simulate KMS encryption by just passing through the plaintext (for testing)
+                    var plaintext = new byte[request.Plaintext.Length];
+                    request.Plaintext.Read(plaintext, 0, plaintext.Length);
+                    request.Plaintext.Position = 0;
+
+                    return Task.FromResult(new EncryptResponse
+                    {
+                        CiphertextBlob = new MemoryStream(plaintext)
+                    });
+                });
+
+            mockKms.Setup(client => client.DecryptAsync(It.IsAny<DecryptRequest>(), It.IsAny<CancellationToken>()))
+                .Returns((DecryptRequest request, CancellationToken token) =>
+                {
+                    // Simulate KMS decryption by just passing through the ciphertext (for testing)
+                    var ciphertext = new byte[request.CiphertextBlob.Length];
+                    request.CiphertextBlob.Read(ciphertext, 0, ciphertext.Length);
+                    request.CiphertextBlob.Position = 0;
+
+                    return Task.FromResult(new DecryptResponse
+                    {
+                        Plaintext = new MemoryStream(ciphertext)
+                    });
+                });
+
+            return mockKms.Object;
+        }
 
         private IAmazonSimpleSystemsManagement CreateMockSSMClient(string kmsKeyId)
         {

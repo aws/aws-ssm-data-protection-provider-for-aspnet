@@ -46,6 +46,7 @@
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.25" />
+    <PackageReference Include="AWSSDK.KeyManagementService" Version="4.0.8" />
     <PackageReference Include="AWSSDK.SimpleSystemsManagement" Version="4.0.7.3" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0">
       <PrivateAssets>all</PrivateAssets>
