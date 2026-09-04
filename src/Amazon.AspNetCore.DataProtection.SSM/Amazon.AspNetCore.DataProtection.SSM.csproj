@@ -25,6 +25,9 @@
 	  
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true' or '$(TF_BUILD)' == 'true' or '$(CODEBUILD_BUILD_ID)' != ''">true</ContinuousIntegrationBuild>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     
@@ -38,6 +41,10 @@
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>..\..\public.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(SourceRevisionId)' != ''">
+    <SourceRoot Include="$(MSBuildThisFileDirectory)" SourceControl="git" RepositoryUrl="$(RepositoryUrl)" RevisionId="$(SourceRevisionId)" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="../../LICENSE" Pack="true" PackagePath="" />
