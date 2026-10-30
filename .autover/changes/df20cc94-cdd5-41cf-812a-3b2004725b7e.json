@@ -1,0 +1,11 @@
+{
+  "Projects": [
+    {
+      "Name": "Amazon.AspNetCore.DataProtection.SSM",
+      "Type": "Patch",
+      "ChangelogMessages": [
+        "Add deterministic build and Source Link template parity (RepositoryType, Deterministic, ContinuousIntegrationBuild CI gate, and explicit SourceRoot) so release-pipeline packs from a git-less archive emit correct Source Link metadata (issue #161)"
+      ]
+    }
+  ]
+}
